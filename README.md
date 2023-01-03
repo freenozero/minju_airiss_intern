@@ -1,1 +1,0 @@
-# minju_airiss_intern
