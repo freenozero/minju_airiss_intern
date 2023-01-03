@@ -25,7 +25,6 @@ plt.figure(figsize=(20,20))
 i=0
 y_dense_all=[]
 for wedge in wedge_name[:3]:
-    
     img1=cv2.imread('D:/workspace/DataBoucher_Xray_Materials_Discrimination_Information/sample/example_2/'+ wedge +'/high.png',-1)/65535*255
     img2=cv2.imread('D:/workspace/DataBoucher_Xray_Materials_Discrimination_Information/sample/example_2/'+ wedge +'/low.png',-1)/65535*255
 #     img1 = (img1/256).astype('uint8')
