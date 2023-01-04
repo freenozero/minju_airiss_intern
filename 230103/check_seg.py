@@ -16,10 +16,8 @@ for i in range(52, 77):
             seg.append(([json_data['annotations'][i]['segmentation'][0][0][j], json_data['annotations'][i]['segmentation'][0][0][j+1]]))
 
     seg = np.array(seg, np.int32)
+    seg_img = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
+    cv2.fillConvexPoly(seg_img, seg, color=(255, 255, 0))
     
-    #img_seg = np.zeros((img.shape[0], img.shape[1], 2), dtype=np.uint8)
-    cv2.fillConvexPoly(img, seg, color=(0,0,0,0))
-   
-    cv2.imshow("img", img)
-
+    cv2.imshow("seg_img", seg_img)
     cv2.waitKey(0)

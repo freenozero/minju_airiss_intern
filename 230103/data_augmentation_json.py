@@ -103,16 +103,16 @@ def augmentation(file_path, json_path):
             # print(new_images)
 
             # seg 겹쳐서 이미지 보기
-            # seg = []
-            # for j in range(0, len(new_seg)):
-            #     if j % 2 == 0:
-            #         seg.append((new_seg[j], new_seg[j+1]))
-            # print(seg)
-            # seg = np.array(seg, np.int32)
-            # cv2.fillConvexPoly(update_img, seg, color=(255,0,0))
-        
-            # cv2.imshow("img", update_img)
-            # cv2.waitKey(0)
+            seg = []
+            for j in range(0, len(new_seg)):
+                if j % 2 == 0:
+                    seg.append((new_seg[j], new_seg[j+1]))
+            print(seg)
+            seg = np.array(seg, np.int32)
+            
+            cv2.fillConvexPoly(update_img, seg, color=(255,0,0))
+            cv2.imshow("img", update_img)
+            cv2.waitKey(0)
 
             # json 파일 저장하기
             with open(json_path, 'w') as json_file:
