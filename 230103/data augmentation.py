@@ -2,7 +2,6 @@ import json
 import os
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 import random
 import natsort 
 
@@ -36,21 +35,36 @@ def augmentation(file_path, json_path):
 
                 # 상대적인 비율로 축소, 확대
                 update_img = cv2.resize(img, dsize=(0, 0), fx=update_cols, fy=update_rows, interpolation=cv2.INTER_LINEAR)
-                print('원본:', img.shape)
-                print('업데이트:', update_img.shape)
+                print('원본(height, width):', img.shape)
+                print('업데이트(height, width):', update_img.shape)
                 print('fx, fy:', update_cols, update_rows)
                 
                 cv2.imshow('img', img)
                 cv2.imshow('update_img', update_img)
                 cv2.waitKey(0)
 
+                #segmentation update: seg(x) * update_rows, seg(y) * update_rows
+                new_seg = list()
+                for i in json_data['annotations'][file_name]['segmentation'][0][0]:
+                    num = 0
+                    if((num%2) == 0):
+                        new_seg.append(round(i * update_rows,1))
+                    else:
+                        new_seg.append(round(i * update_cols, 1))
+                    num += 1
+                
+                print(json_data['annotations'][file_name]['segmentation'])
+                print(new_seg)
+                
+               # json_data['annotations'][file_name]['segmentation'][0][0] = new_seg
+
                 #data_max 값에 추가
                 new_annotations = {'id': data_max,
                                       'image_id': data_max,
                                       'category_id': json_data['annotations'][file_name]['category_id'],
-                                      'bbox': json_data['annotations'][file_name]['bbox'],
-                                      'segmentation': json_data['annotations'][file_name]['segmentation'],
-                                      'area': update_img.shape[0]*update_img.shape[1],
+                                      'bbox': [0, 0, update_img.shape[1], update_img.shape[0]], #x, y, width, height
+                                      'segmentation': [[[new_seg]]],
+                                      'area': update_img.shape[0]*update_img.shape[1], #height * width
                                       'iscrowd': False,
                                       'color': 'Unknown',
                                       'unitID': 1,
@@ -62,15 +76,25 @@ def augmentation(file_path, json_path):
 
                 new_images = {'id': data_max,
                                   'dataset_id': data_max,
-                                  'path': file_path + str(data_max) + '.png',
+                                  'path': file_path + '/' + str(data_max) + '.png',
                                   'file_name': str(data_max) + '.png',
-                                  'width': update_img.shape[0],
-                                  'height': update_img.shape[1]}
+                                  'width': update_img.shape[1],
+                                  'height': update_img.shape[0]}
                 json_data['images'].append(new_images)
 
                 print(new_annotations)
                 print(new_images)
+
+                #json 파일 저장하기 
+                print(json_path)
+                with open(json_path, 'w') as f:
+                    json_data = json.dump(json_data, f)
+
+                #이미지 파일 저장하기
+                cv2.imwrite(file_path + '/' + str(data_max) + '.png', update_img)
                 data_max += 1
+
+
 
 file_path = 'D:/wp/data/xray_artknife_a_1/crop'
 json_path = 'D:/wp/data/xray_artknife_a_1/json/crop_data.json'
