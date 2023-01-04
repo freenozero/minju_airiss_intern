@@ -6,9 +6,8 @@ json_path = 'D:/wp/data/xray_artknife_a_1/json/crop_data.json'
 with open(json_path) as json_file:
     json_data = json.load(json_file)
 
-for i in range(200, 220):
+for i in range(52, 77):
     img = cv2.imread(json_data['images'][i]['path'], -1)
-    cv2.imshow("img", img)
     cv2.waitKey(0)
     print(i)
     seg = []
