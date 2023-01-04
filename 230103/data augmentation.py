@@ -25,25 +25,21 @@ def augmentation(file_path, json_path):
             if (f != 'Thumbs.db'):
                 # file 이름이 짝수일때마다 random 생성
                 
-                if (file_name % 2 == 0):
-                    update_fx = random.uniform(0.5, 1.5)
-                    update_fy = random.uniform(0.5, 1.5)
-                    # print(update_fx, update_fy)
-
                 #-1은 16 bit 이미지 불러오기 위함
                 img = cv2.imread(file_path + '/' + f, -1)
 
+                #update_fx와 값을 다르게 주기 위해 if문 두개
+                if (file_name % 2 == 0):
+                    update_cols = round(random.uniform(0.5, 1.5), 1) #x update: img.shape[0] / update_img.shape[0]
+                if (file_name % 2 == 0):
+                    update_rows = round(random.uniform(0.5, 1.5), 1) #y update
+
                 # 상대적인 비율로 축소, 확대
-                update_img = cv2.resize(img, dsize=(
-                    0, 0), fx=update_fx, fy=update_fy, interpolation=cv2.INTER_LINEAR)
-
-
-                print(update_fx, update_fx)
-                print(img.shape)
-                print(update_img.shape)
+                update_img = cv2.resize(img, dsize=(0, 0), fx=update_cols, fy=update_rows, interpolation=cv2.INTER_LINEAR)
+                print('원본:', img.shape)
+                print('업데이트:', update_img.shape)
+                print('fx, fy:', update_cols, update_rows)
                 
-                print(update_img[0]*update_img[1])
-                print(json_data['annotations'][file_name]['bbox'])
                 cv2.imshow('img', img)
                 cv2.imshow('update_img', update_img)
                 cv2.waitKey(0)
@@ -72,8 +68,8 @@ def augmentation(file_path, json_path):
                                   'height': update_img.shape[1]}
                 json_data['images'].append(new_images)
 
-                # print(new_annotations)
-                # print(new_images)
+                print(new_annotations)
+                print(new_images)
                 data_max += 1
 
 file_path = 'D:/wp/data/xray_artknife_a_1/crop'
