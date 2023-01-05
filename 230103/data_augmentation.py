@@ -167,7 +167,6 @@ def filter_image(json_path, origin_img_path, file_path, add_img_path):
             os.makedirs(add_img_path)
         cv2.imwrite(add_img_path + '/' + str(i) + '.png', add_img)
 
-
 # img_name만 변경하면 됨.
 img_name = "xray_jackknife_a_2"
 
