@@ -103,16 +103,16 @@ def augmentation(file_path, json_path):
             # print(new_images)
 
             # seg 겹쳐서 이미지 보기
-            seg = []
-            for j in range(0, len(new_seg)):
-                if j % 2 == 0:
-                    seg.append((new_seg[j], new_seg[j+1]))
-            print(seg)
-            seg = np.array(seg, np.int32)
+            # seg = []
+            # for j in range(0, len(new_seg)):
+            #     if j % 2 == 0:
+            #         seg.append((new_seg[j], new_seg[j+1]))
+            # print(seg)
+            # seg = np.array(seg, np.int32)
             
-            cv2.fillConvexPoly(update_img, seg, color=(255,0,0))
-            cv2.imshow("img", update_img)
-            cv2.waitKey(0)
+            # cv2.fillConvexPoly(update_img, seg, color=(255,0,0))
+            # cv2.imshow("img", update_img)
+            # cv2.waitKey(0)
 
             # json 파일 저장하기
             with open(json_path, 'w') as json_file:
@@ -122,7 +122,53 @@ def augmentation(file_path, json_path):
             cv2.imwrite(file_path + '/' + str(data_max) + '.png', update_img)
             data_max += 1
 
+def filter_image(json_path, origin_json_path, add_img_path):
+    # 이미지 늘릴 파일
+    with open(json_path) as json_file:
+        json_data = json.load(json_file)
+    #이미지 오리지널 파일
+    with open(origin_json_path) as json_file:
+        origin_json_data = json.load(json_file)
+    # print(len(origin_json_data['images']))
+    # print(len(json_data['images']))
 
-file_path = 'D:/wp/data/xray_artknife_a_1/crop'
-json_path = 'D:/wp/data/xray_artknife_a_1/json/crop_data.json'
+    # 새로 만든 이미지 데이터 불러오기
+    for i in range(len(origin_json_data['images'])+1, len(json_data['images'])):
+        img = cv2.imread(json_data['images'][i]['path'], 1)
+
+        #segmentation 불러오기
+        seg = []
+        for j in range(0, len(json_data['annotations'][i]['segmentation'][0][0])):
+            if j % 2 == 0:
+                seg.append(([json_data['annotations'][i]['segmentation'][0][0][j], json_data['annotations'][i]['segmentation'][0][0][j+1]]))
+        seg = np.array(seg, np.int32)
+
+        #bbox 불러오기
+        bbox = json_data['annotations'][i]['bbox']
+
+        #seg 칠하기
+        filter_img = np.full((img.shape[0], img.shape[1], 3), (0, 0, 0), dtype=np.uint8)
+        #seg_img = np.zeros(), dtype=np.uint8)
+        cv2.fillConvexPoly(filter_img, seg, color=(0, 0, 255, 1))
+
+        #bbox 그리기
+        cv2.rectangle(filter_img, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (255, 0, 0, 1), 3)
+
+        #img랑 seg_img 합성하기
+        add_img = cv2.addWeighted(img, 0.7, filter_img, 0.3, 0)
+
+        #합성한 이미지 보기
+        #cv2.imshow("add_img", add_img)
+        #cv2.waitKey(0)
+
+        #합성한 이미지 저장
+        cv2.imwrite(add_img_path + '/' + str(i) + '.png', add_img)
+
+img_name = "xray_hairspray_a_1"
+file_path = 'D:/wp/data/' + img_name + '/crop'
+json_path = 'D:/wp/data/' + img_name + '/json/crop_data.json'
+origin_json_path = 'D:/wp/data/원본/' + img_name + '/json/crop_data.json'
+add_img_path = 'D:/wp/data/' + img_name + '/add_image'
+
 augmentation(file_path, json_path)
+filter_image(json_path, origin_json_path, add_img_path)
