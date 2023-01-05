@@ -32,8 +32,6 @@ def augmentation(file_path, json_path):
                 file_name = int(f.rstrip('.png'))
                 # -1은 16 bit 이미지 불러오기 위함
                 img = cv2.imread(file_path + '/' + f, -1)
-                print(json_file_dic[f])
-                print(f)
                 # file 이름이 짝수일때마다 random 생성
                 # update_fx와 값을 다르게 주기 위해 if문 두개
                 if (file_name % 2 == 0):
@@ -61,8 +59,8 @@ def augmentation(file_path, json_path):
                     num += 1
 
                 # data_max 값에 추가
-                new_annotations = {'id': data_max,
-                                'image_id': data_max,
+                new_annotations = {'id': data_max+2,
+                                'image_id': data_max+2,
                                 'category_id': json_data['annotations'][json_file_dic[f]]['category_id'],
                                 # x, y, width, height
                                 'bbox': [0, 0, update_img.shape[1], update_img.shape[0]],
@@ -78,10 +76,10 @@ def augmentation(file_path, json_path):
                                 'weight': None}
                 json_data['annotations'].append(new_annotations)
 
-                new_images = {'id': data_max,
-                            'dataset_id': data_max,
+                new_images = {'id': data_max+2,
+                            'dataset_id': 1,
                             'path': file_path + '/' + str(data_max) + '.png',
-                            'file_name': str(data_max+1) + '.png',
+                            'file_name': str(data_max) + '.png',
                             'width': update_img.shape[1],
                             'height': update_img.shape[0]}
                 json_data['images'].append(new_images)
@@ -114,19 +112,27 @@ def augmentation(file_path, json_path):
                 data_max += 1
 
 
-def filter_image(json_path, origin_json_path, add_img_path):
-    # 이미지 늘릴 파일
+def filter_image(json_path, origin_img_path, file_path, add_img_path):
+    origin_file = os.listdir(origin_img_path)
+    origin_file = natsort.natsorted(origin_file)  # 정렬 (파일 불러오면 1, 10, 11 ... list 저장 해결법)
+    len_origin_file = len(origin_file)-1  # -1은 Thumbs.db 제외
+
+    file = os.listdir(file_path)
+    file = natsort.natsorted(file)  # 정렬 (파일 불러오면 1, 10, 11 ... list 저장 해결법)
+    len_file = len(file)-1  # -1은 Thumbs.db 제외
+
+   # json 파일 불러오기
     with open(json_path) as json_file:
         json_data = json.load(json_file)
-    # 이미지 오리지널 파일
-    with open(origin_json_path) as json_file:
-        origin_json_data = json.load(json_file)
-    # print(len(origin_json_data['images']))
-    # print(len(json_data['images']))
 
-    # 새로 만든 이미지 데이터 불러오기
-    for i in range(len(origin_json_data['images']), len(json_data['images'])):
-        img = cv2.imread(json_data['images'][i]['path'], 1)
+    json_file_dic = {}
+    for i in range(len(json_data['images'])):
+        file_name = json_data['images'][i]['file_name']
+        if (file_name != 'Thumbs.db'):
+            json_file_dic[file_name] = i
+
+    for i in range(len_origin_file+1, len_file+1):
+        img = cv2.imread(file_path + '/' + file[i], 1)
 
         # segmentation 불러오기
         seg = []
@@ -135,19 +141,19 @@ def filter_image(json_path, origin_json_path, add_img_path):
                 seg.append(([json_data['annotations'][i]['segmentation'][0][0]
                            [j], json_data['annotations'][i]['segmentation'][0][0][j+1]]))
         seg = np.array(seg, np.int32)
-
+        
         # bbox 불러오기
         bbox = json_data['annotations'][i]['bbox']
 
         # seg 칠하기
         filter_img = np.full(
             (img.shape[0], img.shape[1], 3), (0, 0, 0), dtype=np.uint8)
-        # seg_img = np.zeros(), dtype=np.uint8)
         cv2.fillConvexPoly(filter_img, seg, color=(0, 0, 255, 1))
 
         # bbox 그리기
         cv2.rectangle(filter_img, (bbox[0], bbox[1]),
                       (bbox[2], bbox[3]), (255, 0, 0, 1), 3)
+
 
         # img랑 seg_img 합성하기
         add_img = cv2.addWeighted(img, 0.7, filter_img, 0.3, 0)
@@ -163,11 +169,12 @@ def filter_image(json_path, origin_json_path, add_img_path):
 
 
 # img_name만 변경하면 됨.
-img_name = "xray_torchlighter_a_1"
+img_name = "xray_laserpointer_c_1"
+
 file_path = 'D:/wp/data/' + img_name + '/crop'
 json_path = 'D:/wp/data/' + img_name + '/json/crop_data.json'
-origin_json_path = 'D:/wp/data/원본/' + img_name + '/json/crop_data.json'
+origin_img_path = 'D:/wp/data/원본/' + img_name + '/crop'
 add_img_path = 'D:/wp/data/' + img_name + '/add_image'
 
-# augmentation(file_path, json_path)
-filter_image(json_path, origin_json_path, add_img_path)
+augmentation(file_path, json_path)
+filter_image(json_path, origin_img_path, file_path, add_img_path)
