@@ -35,8 +35,11 @@ image 폴더는 원본 데이터
 
 -> 주의할 점 이미지 16bit로 불러들이고 저장해야함
 
-# 230104
+# 230104 ~ 230105
 230103에서
-1. bbox 추가
-2. segmentation 투명하게
+1. bbox 추가: cv2.rectangle 사용해서
+2. segmentation 투명하게: https://hazel-developer.tistory.com/78
 
+문제점: 주어진 file이랑 json images의 path 순서가 다름..
+일단 이미지 파일 순서대로 low, high 세트이기 때문에 이미지 파일의 이름을 기준으로 데이터를 늘려야함.
+그리고 json에서 해당 이미지 파일 이름을 기준으로 path 정보를 가져와서 사용해야함.
