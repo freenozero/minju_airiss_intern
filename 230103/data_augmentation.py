@@ -169,7 +169,7 @@ def filter_image(json_path, origin_img_path, file_path, add_img_path):
 
 
 # img_name만 변경하면 됨.
-img_name = "xray_laserpointer_c_1"
+img_name = "xray_jackknife_a_2"
 
 file_path = 'D:/wp/data/' + img_name + '/crop'
 json_path = 'D:/wp/data/' + img_name + '/json/crop_data.json'

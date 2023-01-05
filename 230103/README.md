@@ -40,6 +40,11 @@ image 폴더는 원본 데이터
 1. bbox 추가: cv2.rectangle 사용해서
 2. segmentation 투명하게: https://hazel-developer.tistory.com/78
 
-문제점: 주어진 file이랑 json images의 path 순서가 다름..
+
+주어진 file이랑 json images의 path 순서가 다름..
 일단 이미지 파일 순서대로 low, high 세트이기 때문에 이미지 파일의 이름을 기준으로 데이터를 늘려야함.
 그리고 json에서 해당 이미지 파일 이름을 기준으로 path 정보를 가져와서 사용해야함.
+
+
++) xray_officeutilityknife_a_1: 1부터 시작함, xray_scissors_1: 숫자가 중구난방, xray_laserpointer_f_1: 30, 31이 없음
+위에 맞게 코드를 또 수정해야함..
