@@ -46,9 +46,24 @@ image 폴더는 원본 데이터
 그리고 json에서 해당 이미지 파일 이름을 기준으로 path 정보를 가져와서 사용해야함.
 
 # 230106
-+)
++) error
 1. xray_officeutilityknife_a_1: 1부터 시작함(o)
-2. xray_scissors_1: 숫자가 중구난방
+2. xray_scissors_1: 숫자가 중구난방(o)
 3. xray_laserpointer_f_1: 30, 31이 없음(o)
 
-위에 맞게 코드를 또 수정해야함..
+## feedback
+1. 함수 분할 후 클래스로 작성
+2. argc, argv 개념 정리
+3. 매직 메소드
+
++) 4. 라이프 사이클 이해
++) 5. 디버깅 후 확인(무결성, 최적화)
+## 코드 feedback
+1. 이미지 불러올 때 아예 확장자로 불러오기
+2. 이미지 리스트로 저장 후 사용
+3. enumerate 사용
+4. 문자열은 f 문자로 
+5. bbox[0,0] 말고 seg를 구해서 하도록 변경
+## github feedback
+1. github 이모지 뜻 이해
+2. github read.me 변경
