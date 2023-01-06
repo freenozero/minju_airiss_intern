@@ -51,7 +51,6 @@ def augmentation(file_path, json_path):
                     update_rows = round(random.uniform(0.5, 1.5), 1)  # y update
             else:
                 if ((file_name) % 2 != 0):
-                    # x update: img.shape[0] / update_img.shape[0]
                     update_cols = round(random.uniform(0.5, 1.5), 1)
                 if ((file_name) % 2 != 0):
                     update_rows = round(random.uniform(0.5, 1.5), 1)  # y update
@@ -191,7 +190,7 @@ def filter_image(json_path, origin_img_path, file_path, add_img_path):
         cv2.imwrite(add_img_path + '/' + i, add_img)
 
 # img_name만 변경하면 됨.
-img_name = "xray_scissors_6"
+img_name = "xray_artknife_a_1"
 
 file_path = 'D:/wp/data/' + img_name + '/crop'
 json_path = 'D:/wp/data/' + img_name + '/json/crop_data.json'
