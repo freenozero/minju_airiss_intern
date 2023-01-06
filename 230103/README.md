@@ -45,6 +45,9 @@ image 폴더는 원본 데이터
 일단 이미지 파일 순서대로 low, high 세트이기 때문에 이미지 파일의 이름을 기준으로 데이터를 늘려야함.
 그리고 json에서 해당 이미지 파일 이름을 기준으로 path 정보를 가져와서 사용해야함.
 
-
-+) xray_officeutilityknife_a_1: 1부터 시작함, xray_scissors_1: 숫자가 중구난방, xray_laserpointer_f_1: 30, 31이 없음
+# 230106
++)
+1. xray_officeutilityknife_a_1: 1부터 시작함(o)
+2. xray_scissors_1: 숫자가 중구난방
+3. xray_laserpointer_f_1: 30, 31이 없음(o)
 위에 맞게 코드를 또 수정해야함..
