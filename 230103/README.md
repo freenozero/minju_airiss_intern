@@ -50,4 +50,5 @@ image 폴더는 원본 데이터
 1. xray_officeutilityknife_a_1: 1부터 시작함(o)
 2. xray_scissors_1: 숫자가 중구난방
 3. xray_laserpointer_f_1: 30, 31이 없음(o)
+
 위에 맞게 코드를 또 수정해야함..

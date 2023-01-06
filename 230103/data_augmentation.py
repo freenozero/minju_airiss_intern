@@ -26,7 +26,7 @@ def augmentation(file_path, json_path):
         diff = (int(file[len(file)-1].rstrip('.png')) - len(json_data['images'])) + 1
     elif ((int(file[0].rstrip('.png'))) == 1):
         diff =  (int(file[len(file)-1].rstrip('.png')) - len(json_data['images']))
-    print(diff)
+    print(int(file[len(file)-1].rstrip('.png')) - len(json_data['images']))
 
     for _ in range(0, 3):
         for f in file:
@@ -191,7 +191,7 @@ def filter_image(json_path, origin_img_path, file_path, add_img_path):
         cv2.imwrite(add_img_path + '/' + i, add_img)
 
 # img_name만 변경하면 됨.
-img_name = "xray_butanegas_b_1"
+img_name = "xray_scissors_6"
 
 file_path = 'D:/wp/data/' + img_name + '/crop'
 json_path = 'D:/wp/data/' + img_name + '/json/crop_data.json'
