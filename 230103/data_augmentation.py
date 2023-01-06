@@ -6,7 +6,7 @@ import random
 import natsort
 
 
-def augmentation(file_path, json_path):
+def augmentation(file_path, json_path, img_name):
     file = os.listdir(file_path)
     if "Thumbs.db" in file:
         file.remove("Thumbs.db")
@@ -20,15 +20,11 @@ def augmentation(file_path, json_path):
     for i in range(len(json_data['images'])):
         file_name = json_data['images'][i]['file_name']
         json_file_dic[file_name] = i
-    
-    #이미지 순서 중간에 몇 개가 없는지
-    if (int(file[0].rstrip('.png')) == 0):
-        diff = (int(file[len(file)-1].rstrip('.png')) - len(json_data['images'])) + 1
-    elif ((int(file[0].rstrip('.png'))) == 1):
-        diff =  (int(file[len(file)-1].rstrip('.png')) - len(json_data['images']))
-    print(int(file[len(file)-1].rstrip('.png')) - len(json_data['images']))
 
-    for _ in range(0, 3):
+    save_file_name = file[len(file)-1].rstrip('.png')
+    
+    save_file_name = str(int(save_file_name)+ 1) 
+    for _ in range(0, 1):
         for f in file:
             # json 파일 불러오기
             with open(json_path) as json_file:
@@ -42,8 +38,8 @@ def augmentation(file_path, json_path):
             # file 이름이 짝수일때마다 random 생성
             # update_fx와 값을 다르게 주기 위해 if문 두개
 
-            # 이미지 시작 파일이 0인지 1인지 구별
-            if (int(file[0].rstrip('.png')) == 0):
+            # 이미지 시작 파일이 짝수인지 홀수인지 구별 후 random 
+            if ((int(file[0].rstrip('.png'))%2) == 0): 
                 if ((file_name) % 2 == 0):
                     # x update: img.shape[0] / update_img.shape[0]
                     update_cols = round(random.uniform(0.5, 1.5), 1)
@@ -54,7 +50,9 @@ def augmentation(file_path, json_path):
                     update_cols = round(random.uniform(0.5, 1.5), 1)
                 if ((file_name) % 2 != 0):
                     update_rows = round(random.uniform(0.5, 1.5), 1)  # y update
-                
+            
+
+
             # 상대적인 비율로 축소, 확대
             update_img = cv2.resize(img, dsize=(
                 0, 0), fx=update_cols, fy=update_rows, interpolation=cv2.INTER_LINEAR)
@@ -75,11 +73,14 @@ def augmentation(file_path, json_path):
                 # print(new_seg)
                 num += 1
 
+            if "xray_scissors" in img_name:
+                save_file_name.zfill(5)
+
             # json 파일 추가
             new_images = {'id': len(json_data['images']) +1,
                             'dataset_id': json_data['images'][json_file_dic[f]]['dataset_id'],
-                            'path': file_path + '/' + str(len(json_data['images']) + diff) + '.png',
-                            'file_name': str(len(json_data['images']) + diff) + '.png',
+                            'path': file_path + '/' + save_file_name + '.png',
+                            'file_name': save_file_name + '.png',
                             'width': update_img.shape[1],
                             'height': update_img.shape[0]}
             json_data['images'].append(new_images)
@@ -122,14 +123,18 @@ def augmentation(file_path, json_path):
             # cv2.waitKey(0)
 
             # 이미지 파일 저장
-            cv2.imwrite(file_path + '/' + \
-                        str(len(json_data['images']) + diff - 1) + '.png', update_img)
+            cv2.imwrite(file_path + '/' + save_file_name + '.png', update_img)
 
             # json 파일 저장
             with open(json_path, 'w') as json_file:
                 json_data = json.dump(json_data, json_file)
             
             file_name += 1
+            save_file_name = str(int(save_file_name)+ 1) 
+
+            if "xray_scissors" in img_name:
+                save_file_name = save_file_name.zfill(5)
+            
 
 
 def filter_image(json_path, origin_img_path, file_path, add_img_path):
@@ -190,12 +195,12 @@ def filter_image(json_path, origin_img_path, file_path, add_img_path):
         cv2.imwrite(add_img_path + '/' + i, add_img)
 
 # img_name만 변경하면 됨.
-img_name = "xray_artknife_a_1"
+img_name = "xray_scissors_1"
 
 file_path = 'D:/wp/data/' + img_name + '/crop'
 json_path = 'D:/wp/data/' + img_name + '/json/crop_data.json'
 origin_img_path = 'D:/wp/data/원본/' + img_name + '/crop'
 add_img_path = 'D:/wp/data/' + img_name + '/add_image'
 
-augmentation(file_path, json_path)
+augmentation(file_path, json_path, img_name)
 filter_image(json_path, origin_img_path, file_path, add_img_path)
