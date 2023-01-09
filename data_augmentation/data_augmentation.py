@@ -5,22 +5,36 @@ import numpy as np
 import random
 import natsort
 
+def main():
+    img_name = "xray_scissors_1"
+    augmentation(img_name)
+    filter_image(img_name)
+
+def json_load(json_path):
+    with open(json_path) as json_file:
+        json_data = json.load(json_file)
+    json_file_dic = {}
+
+    # file_name = i 형식
+    for i in range(len(json_data['images'])):
+        file_name = json_data['images'][i]['file_name']
+        json_file_dic[file_name] = i
+
+    return json_data, json_file_dic
+
+def json_dump(json_path):
+    with open(json_path, 'w') as json_file:
+        json_data = json.dump(json_data, json_file)
+
 def augmentation(img_name):
     file_path = f"D:/wp/data/{img_name}/crop"
     json_path = f"D:/wp/data/{img_name}/json/crop_data.json"
     
     file = [f for f in os.listdir(file_path) if f.endswith('.png')] # png 파일만 불러오기
     file = natsort.natsorted(file)  # 정렬
-    
-    # json 파일 불러오기
-    with open(json_path) as json_file:
-        json_data = json.load(json_file)
 
-    # json 파일의 file_name = i 형식으로 불러오기
-    json_file_dic = {}
-    for i in range(len(json_data['images'])):
-        file_name = json_data['images'][i]['file_name']
-        json_file_dic[file_name] = i
+    #json data 불러오기
+    json_data, json_file_dic = json_load(json_path)
     
     # 저장할 파일 이름을 crop 폴더 max에서 +1
     save_file_name = file[len(file)-1].rstrip('.png')
@@ -53,17 +67,16 @@ def augmentation(img_name):
             
             # segmentation update: seg(x) * update_rows, seg(y) * update_rows
             new_seg = list()
-            num = 0
-            for i in json_data['annotations'][json_file_dic[f]]['segmentation'][0][0]:
-                if ((num % 2) == 0):
-                    new_seg.append(round(i * update_cols, 1))
+            for index, seg in enumerate(json_data['annotations'][json_file_dic[f]]['segmentation'][0][0]):
+                if ((index % 2) == 0):
+                    new_seg.append(round(seg * update_cols, 1))
                 else:
-                    new_seg.append(round(i * update_rows, 1))
-                # print(new_seg)
-                num += 1
+                    new_seg.append(round(seg * update_rows, 1))
+                
             
+            save_file_name = str(int(save_file_name)+ 1)
+
             # 파일이 가위일 경우
-            save_file_name = str(int(save_file_name)+ 1) 
             if "xray_scissors" in img_name:
                 save_file_name = save_file_name.zfill(5)
 
@@ -118,8 +131,7 @@ def augmentation(img_name):
             file_name += 1
     
     # json 파일 저장
-    with open(json_path, 'w') as json_file:
-        json_data = json.dump(json_data, json_file)
+    json_dump(json_path)
             
 
 def filter_image(img_name):
@@ -134,14 +146,8 @@ def filter_image(img_name):
     file = [f for f in os.listdir(file_path) if f.endswith('.png')]
     file = natsort.natsorted(file)
 
-   # json 파일 불러오기
-    with open(json_path) as json_file:
-        json_data = json.load(json_file)
-
-    json_file_dic = {}
-    for i in range(0, len(json_data['images'])):
-        file_name = json_data['images'][i]['file_name']
-        json_file_dic[file_name] = i
+    #json data 불러오기
+    json_data, json_file_dic = json_load(json_path)
 
     # origin_file에 없는 file 값들 저장
     s = set(origin_file)
@@ -153,11 +159,11 @@ def filter_image(img_name):
         
         # segmentation 불러오기
         seg = []
-        file_name = str(i.rstrip('.png'))
-        for j in range(0, len(json_data['annotations'][json_file_dic[i]]['segmentation'][0][0])):
-            if j % 2 == 0:
+        
+        for index, _ in enumerate(json_data['annotations'][json_file_dic[i]]['segmentation'][0][0]):
+            if((index % 2) == 0):
                 seg.append(([json_data['annotations'][json_file_dic[i]]['segmentation'][0][0]
-                           [j], json_data['annotations'][json_file_dic[i]]['segmentation'][0][0][j+1]]))
+                           [index], json_data['annotations'][json_file_dic[i]]['segmentation'][0][0][index+1]]))
         seg = np.array(seg, np.int32)
 
         # bbox 불러오기
@@ -177,13 +183,12 @@ def filter_image(img_name):
         # cv2.imshow("add_img", add_img)
         # cv2.waitKey(0)
 
-        # 합성한 이미지 저장
+        # add_image 폴더 없을 시 생성
         if not os.path.exists(add_img_path):
             os.makedirs(add_img_path)
+            
+        # 합성한 이미지 저장
         cv2.imwrite(add_img_path + '/' + i, add_img)
 
-# img_name만 변경하면 됨.
-img_name = "xray_scissors_1"
-
-augmentation(img_name)
-filter_image(img_name)
+if __name__ == "__main__":
+    main()
