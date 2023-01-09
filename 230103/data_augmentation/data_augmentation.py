@@ -197,10 +197,10 @@ def filter_image(json_path, origin_img_path, file_path, add_img_path):
 # img_name만 변경하면 됨.
 img_name = "xray_scissors_1"
 
-file_path = 'D:/wp/data/' + img_name + '/crop'
-json_path = 'D:/wp/data/' + img_name + '/json/crop_data.json'
-origin_img_path = 'D:/wp/data/원본/' + img_name + '/crop'
-add_img_path = 'D:/wp/data/' + img_name + '/add_image'
+file_path = f"D:/wp/data/{img_name}/crop"
+json_path = f"D:/wp/data/{img_name}/json/crop_data.json"
+origin_img_path = f"D:/wp/data/원본/{img_name}/crop"
+add_img_path = f"D:/wp/data/{img_name}/add_image"
 
 augmentation(file_path, json_path, img_name)
 filter_image(json_path, origin_img_path, file_path, add_img_path)
