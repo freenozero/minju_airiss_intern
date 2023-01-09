@@ -6,7 +6,7 @@ import random
 import natsort
 
 def main():
-    img_name = "xray_officeutilityknife_a_1"
+    img_name = "xray_scissors_12"
     augmentation(img_name)
     filter_image(img_name)
 
