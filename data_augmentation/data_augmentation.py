@@ -133,9 +133,6 @@ def augmentation(img_name):
             # cv2.imshow("img", update_img)
             # cv2.waitKey(0)
 
-
-            
-
 def filter_image(img_name):
     file_path = f"D:/wp/data/{img_name}/crop"
     json_path = f"D:/wp/data/{img_name}/json/crop_data.json"
