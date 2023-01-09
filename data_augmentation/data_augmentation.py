@@ -112,13 +112,14 @@ def augmentation(img_name):
     # json 파일 저장
     json_dump(json_path, json_data)
 
+            # 새로운 annotations와 new_images 보기
+            # print(new_annotations)
+            # print(new_images)
+
             # 이미지 보기
             # cv2.imshow('img', img)  # 이전
             # cv2.imshow('update_img', update_img)
             # cv2.waitKey(0)
-
-            # print(new_annotations)
-            # print(new_images)
 
             # seg 겹쳐서 이미지 보기
             # seg = []
