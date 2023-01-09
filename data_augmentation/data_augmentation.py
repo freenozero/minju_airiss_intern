@@ -13,8 +13,8 @@ def main():
 def json_load(json_path):
     with open(json_path) as json_file:
         json_data = json.load(json_file)
-    json_file_dic = {}
 
+    json_file_dic = {}
     # file_name = i 형식
     for i in range(len(json_data['images'])):
         file_name = json_data['images'][i]['file_name']
@@ -22,18 +22,20 @@ def json_load(json_path):
 
     return json_data, json_file_dic
 
-def json_dump(json_path):
+def json_dump(json_path, json_data):
     with open(json_path, 'w') as json_file:
         json_data = json.dump(json_data, json_file)
+
+def png_load(file_path):
+    file = [f for f in os.listdir(file_path) if f.endswith('.png')] # png 파일만 불러오기
+    file = natsort.natsorted(file)  # 정렬
+    return file
 
 def augmentation(img_name):
     file_path = f"D:/wp/data/{img_name}/crop"
     json_path = f"D:/wp/data/{img_name}/json/crop_data.json"
-    
-    file = [f for f in os.listdir(file_path) if f.endswith('.png')] # png 파일만 불러오기
-    file = natsort.natsorted(file)  # 정렬
 
-    #json data 불러오기
+    file = png_load(file_path)
     json_data, json_file_dic = json_load(json_path)
     
     # 저장할 파일 이름을 crop 폴더 max에서 +1
@@ -60,10 +62,6 @@ def augmentation(img_name):
             # 상대적인 비율로 축소, 확대
             update_img = cv2.resize(img, dsize=(
                 0, 0), fx=update_cols, fy=update_rows, interpolation=cv2.INTER_LINEAR)
-            # print('원본(height, width):', img.shape)
-            # print('업데이트(height, width):', update_img.shape)
-            # print('fx, fy:', update_cols, update_rows)
-
             
             # segmentation update: seg(x) * update_rows, seg(y) * update_rows
             new_seg = list()
@@ -71,11 +69,9 @@ def augmentation(img_name):
                 if ((index % 2) == 0):
                     new_seg.append(round(seg * update_cols, 1))
                 else:
-                    new_seg.append(round(seg * update_rows, 1))
-                
+                    new_seg.append(round(seg * update_rows, 1))           
             
             save_file_name = str(int(save_file_name)+ 1)
-
             # 파일이 가위일 경우
             if "xray_scissors" in img_name:
                 save_file_name = save_file_name.zfill(5)
@@ -129,9 +125,8 @@ def augmentation(img_name):
             # 이미지 파일 저장
             cv2.imwrite(file_path + '/' + save_file_name + '.png', update_img)
             file_name += 1
-    
     # json 파일 저장
-    json_dump(json_path)
+    json_dump(json_path, json_data)
             
 
 def filter_image(img_name):
@@ -140,13 +135,9 @@ def filter_image(img_name):
     origin_img_path = f"D:/wp/data/원본/{img_name}/crop"
     add_img_path = f"D:/wp/data/{img_name}/add_image"
 
-    origin_file = [f for f in os.listdir(origin_img_path) if f.endswith('.png')]
-    origin_file = natsort.natsorted(origin_file)
-
-    file = [f for f in os.listdir(file_path) if f.endswith('.png')]
-    file = natsort.natsorted(file)
-
-    #json data 불러오기
+    origin_file = png_load(origin_img_path)
+    file = png_load(file_path)
+    
     json_data, json_file_dic = json_load(json_path)
 
     # origin_file에 없는 file 값들 저장
@@ -186,7 +177,7 @@ def filter_image(img_name):
         # add_image 폴더 없을 시 생성
         if not os.path.exists(add_img_path):
             os.makedirs(add_img_path)
-            
+
         # 합성한 이미지 저장
         cv2.imwrite(add_img_path + '/' + i, add_img)
 
