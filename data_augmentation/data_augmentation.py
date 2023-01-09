@@ -10,6 +10,7 @@ def main():
     augmentation(img_name)
     filter_image(img_name)
 
+# json 불러오기
 def json_load(json_path):
     with open(json_path) as json_file:
         json_data = json.load(json_file)
@@ -22,12 +23,14 @@ def json_load(json_path):
 
     return json_data, json_file_dic
 
+# json 저장
 def json_dump(json_path, json_data):
     with open(json_path, 'w') as json_file:
         json_data = json.dump(json_data, json_file)
 
+# png 파일만 불러오기
 def png_load(file_path):
-    file = [f for f in os.listdir(file_path) if f.endswith('.png')] # png 파일만 불러오기
+    file = [f for f in os.listdir(file_path) if f.endswith('.png')]
     file = natsort.natsorted(file)  # 정렬
     return file
 
@@ -71,6 +74,7 @@ def augmentation(img_name):
                 else:
                     new_seg.append(round(seg * update_rows, 1))           
             
+            # 저장할 파일 += 1
             save_file_name = str(int(save_file_name)+ 1)
             # 파일이 가위일 경우
             if "xray_scissors" in img_name:
@@ -101,6 +105,12 @@ def augmentation(img_name):
                                 'number2': json_data['annotations'][json_file_dic[f]]['number2'],
                                 'weight': json_data['annotations'][json_file_dic[f]]['weight']}
             json_data['annotations'].append(new_annotations)
+            
+            # 이미지 파일 저장
+            cv2.imwrite(file_path + '/' + save_file_name + '.png', update_img)
+
+    # json 파일 저장
+    json_dump(json_path, json_data)
 
             # 이미지 보기
             # cv2.imshow('img', img)  # 이전
@@ -122,11 +132,7 @@ def augmentation(img_name):
             # cv2.imshow("img", update_img)
             # cv2.waitKey(0)
 
-            # 이미지 파일 저장
-            cv2.imwrite(file_path + '/' + save_file_name + '.png', update_img)
-            file_name += 1
-    # json 파일 저장
-    json_dump(json_path, json_data)
+
             
 
 def filter_image(img_name):
@@ -169,10 +175,6 @@ def filter_image(img_name):
 
         # original_img랑 filter_img 합성하기
         add_img = cv2.addWeighted(original_img, 0.7, filter_img, 0.3, 3)
-        
-        # 합성한 이미지 보기
-        # cv2.imshow("add_img", add_img)
-        # cv2.waitKey(0)
 
         # add_image 폴더 없을 시 생성
         if not os.path.exists(add_img_path):
