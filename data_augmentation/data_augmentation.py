@@ -6,7 +6,7 @@ import random
 import natsort
 
 def main():
-    img_name = "xray_scissors_1"
+    img_name = "xray_officeutilityknife_a_1"
     augmentation(img_name)
     filter_image(img_name)
 
@@ -156,7 +156,6 @@ def filter_image(img_name):
         
         # segmentation 불러오기
         seg = []
-        
         for index, _ in enumerate(json_data['annotations'][json_file_dic[i]]['segmentation'][0][0]):
             if((index % 2) == 0):
                 seg.append(([json_data['annotations'][json_file_dic[i]]['segmentation'][0][0]
