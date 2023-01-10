@@ -29,7 +29,7 @@ def json_dump(json_path, json_data):
 # png 파일만 불러오기
 def png_load(file_path):
     file = [f for f in os.listdir(file_path) if f.endswith('.png')]
-    file = natsort.natsorted(file)  # 정렬
+    file = natsort.natsorted(file)
     return file
 
 # 이미지 합성하기
