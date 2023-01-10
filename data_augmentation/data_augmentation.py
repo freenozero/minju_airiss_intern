@@ -88,7 +88,6 @@ def augmentation(img_name):
                             'width': update_img.shape[1],
                             'height': update_img.shape[0]}
             json_data['images'].append(new_images)
-
             new_annotations = {'id': len(json_data['images']),
                                 'image_id': len(json_data['images']),
                                 'category_id': json_data['annotations'][json_file_dic[f]]['category_id'],
