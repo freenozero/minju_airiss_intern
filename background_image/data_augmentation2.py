@@ -6,9 +6,16 @@ import random
 import natsort
 
 def main():
-    img_name = "xray_scissors_5"
-    augmentation(img_name)
-    filter_image(img_name)
+    img_name = "bettery"
+    folder_path = f"D:/wp/data/data_augmentation/{img_name}"
+    folder_name = os.listdir(folder_path)
+    for name in folder_name:
+        path = f"{folder_path}/{name}/crop"
+        file = [f for f in os.listdir(path) if f.endswith('.png')]
+        print(file)
+
+    # augmentation(img_name)
+    # filter_image(img_name)
 
 # json 불러오기
 def json_load(json_path):
@@ -35,7 +42,7 @@ def png_load(file_path):
     return file
 
 def augmentation(img_name):
-    file_path = f"D:/wp/data/{img_name}/crop"
+    file_path = f"D:/wp/data/data/data_augmentation/bettery/{img_name}/crop"
     json_path = f"D:/wp/data/{img_name}/json/crop_data.json"
 
     file = png_load(file_path)
@@ -43,7 +50,7 @@ def augmentation(img_name):
     
     # 저장할 파일 이름을 crop 폴더 max에서 +1
     save_file_name = file[len(file)-1].rstrip('.png')
-    #시작 파일 짝수 홀수
+    # 시작 파일 짝수 홀수
     first_file_name = int(file[0].rstrip('.png')) % 2
 
     # 한 장에 몇 번 저장할지
