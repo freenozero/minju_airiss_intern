@@ -41,7 +41,7 @@ def allFileLoad():
     image_file, json_file, background_file = [], [], []
     background_path = "D:/wp/data/background_manipulation/manipulation/background_image"
 
-    # 모든 이미지 저장
+    # 모든 이미지 불러오기
     for category in categorical:
         image_path = f"D:/wp/data/background_manipulation/manipulation/categorical_image/{category}/crop"
         image_file.append(pngLoad(image_path))
@@ -60,8 +60,7 @@ def itemIndexRandom(item_index, item_used):
         for i in range (0, len(item_index)):
             # use image cnt
             item_use_cnt = random.randint(0, 2)
-            print(item_use_cnt)
-            time.sleep(1)
+            
             # 카테고리당 item_use_cnt만큼 뽑기
             for _ in range(0, item_use_cnt):
                 index = random.randrange(0, 9999, 2)
@@ -70,6 +69,7 @@ def itemIndexRandom(item_index, item_used):
                     # 10,000장을 다 사용시
                     if (len(item_used[i]) >= 10000):
                         item_used[i] = []
+                        
                     index = random.randrange(0, 9999, 2)
                 item_index[i].append(index)
 
@@ -113,7 +113,7 @@ def main():
         item_index, item_used = itemIndexRandom(item_index, item_used)
         # item bk image 불러오기
 
-        # low
+        # low  
         # background
         bk_image = background_file[bk_random_index+1]
         # itemImage
