@@ -140,7 +140,8 @@ def augmentation(img_name, folder_name):
 
                 new_annotations = {'id': save_file_name+1,
                                     'image_id': save_file_name+1,
-                                    'category_id': 3,
+                                    # ※1: knife, 2:gun, 3:bettery, 4:laserpointer 변경 필요※
+                                    'category_id': 4, 
                                     # x, y, width, height
                                     'bbox': [0, 0, img.shape[1], img.shape[0]],
                                     'segmentation': [[new_seg]],
