@@ -35,8 +35,8 @@ def png_load(file_path):
     return file
 
 def augmentation(img_name):
-    file_path = f"D:/wp/data/{img_name}/crop"
-    json_path = f"D:/wp/data/{img_name}/json/crop_data.json"
+    file_path = f"D:/wp/data/data_augmentation/{img_name}/crop"
+    json_path = f"D:/wp/data/data_augmentation/{img_name}/json/crop_data.json"
 
     file = png_load(file_path)
     json_data, json_file_dic = json_load(json_path)
@@ -145,10 +145,10 @@ def augmentation(img_name):
             # cv2.waitKey(0)
 
 def filter_image(img_name):
-    file_path = f"D:/wp/data/{img_name}/crop"
-    json_path = f"D:/wp/data/{img_name}/json/crop_data.json"
-    origin_img_path = f"D:/wp/data/원본/{img_name}/crop"
-    add_img_path = f"D:/wp/data/{img_name}/add_image"
+    file_path = f"D:/wp/data/data_augmentation/{img_name}/crop"
+    json_path = f"D:/wp/data/data_augmentation/{img_name}/json/crop_data.json"
+    origin_img_path = f"D:/wp/data/data_augmentation/원본/{img_name}/crop"
+    add_img_path = f"D:/wp/data/data_augmentation/{img_name}/add_image"
 
     origin_file = png_load(origin_img_path)
     file = png_load(file_path)
