@@ -7,27 +7,80 @@ import natsort
 import time
 import math
 
-# json 불러오기
-def jsonLoad(json_path):
-    with open(json_path) as json_file:
-        json_data = json.load(json_file)
+# json load
+def jsonLoad():
+    json_data = []
+    json_path = ["D:/wp/data/background_manipulation/manipulation/categorical_image/knife/json/crop_data.json",
+                "D:/wp/data/background_manipulation/manipulation/categorical_image/gun/json/crop_data.json",
+                "D:/wp/data/background_manipulation/manipulation/categorical_image/bettery/json/crop_data.json",
+                "D:/wp/data/background_manipulation/manipulation/categorical_image/laserpointer/json/crop_data.json"]
 
-    json_file_dic = {}
-    # file_name = i 형식
-    for i in range(len(json_data['images'])):
-        file_name = json_data['images'][i]['file_name']
-        json_file_dic[file_name] = i
-    
-    json_file = []
-    json_file.append(json_data)
-    json_file.append(json_file_dic)
+    for path in json_path:
+        with open(path) as json_file:
+            json_data.append(json.load(json_file))
 
-    return json_file
+    return json_data
 
-# json 저장
+# json dump
 def jsonDump(json_path, json_data):
     with open(json_path, 'w') as json_file:
         json_data = json.dump(json_data, json_file)
+
+# json append
+def jsonAppend(original_json, save_json, file_name, item_index, bk_images):
+    
+    # high
+    new_images = {'id': file_name + 1, #1부터 증가
+                                'dataset_id': 1,
+                                'path': save_path + '/' + str(file_name) + '.png',
+                                'file_name': str(file_name) + '.png',
+                                'width': img[0].shape[1],
+                                'height': img[0].shape[0]}
+    data_json['images'].append(new_images)
+
+    new_annotations = {'id': 1, # 0부터 증가
+                        'image_id': file_name, 
+                        'category_id': ?,
+                        # x, y, width, height
+                        'bbox': [0, 0, img.shape[1], img.shape[0]],
+                        'segmentation': [[new_seg]],
+                        # height * width
+                        'area': img[0].shape[0]*img[0].shape[1],
+                        'iscrowd': False,
+                        'color': 'Unknown',
+                        'unitID': 1,
+                        'registNum': 1,
+                        'number1': 4,
+                        'number2': 4,
+                        'weight': None}
+    data_json['annotations'].append(new_annotations)
+
+    # low
+    new_images = {'id': file_name + 2,
+                            'dataset_id': 1,
+                            'path': save_path + '/' + str(file_name) + '.png',
+                            'file_name': str(file_name) + '.png',
+                            'width': img[0].shape[1],
+                            'height': img[0].shape[0]}
+    data_json['images'].append(new_images)
+
+    new_annotations = {'id': 1, # 0부터 증가
+                        'image_id': file_name, 
+                        'category_id': 3,
+                        # x, y, width, height
+                        'bbox': [0, 0, img.shape[1], img.shape[0]],
+                        'segmentation': [[new_seg]],
+                        # height * width
+                        'area': img[1].shape[0]*img[1].shape[1],
+                        'iscrowd': False,
+                        'color': 'Unknown',
+                        'unitID': 1,
+                        'registNum': 1,
+                        'number1': 4,
+                        'number2': 4,
+                        'weight': None}
+    data_json['annotations'].append(new_annotations)
+    time.sleep(2)
 
 # 폴더에 모든 이미지 이름 불러오기
 def FolderImgNameLoad(file_path):
@@ -35,10 +88,17 @@ def FolderImgNameLoad(file_path):
     file = natsort.natsorted(file)  # 정렬
     return file
 
-# 이미지 load
+# image imread
 def pngLoad(file_path):
     file = cv2.imread(file_path, -1)
     return file
+
+# image imwrite
+def pngSave(file_name, bk_images):
+    file_path = "D:/wp/data/background_manipulation/manipulation/manipulation_image/image"
+    cv2.imwrite(f"{file_path}/{file_name}.png", bk_images[0])
+    cv2.imwrite(f"{file_path}/{file_name+1}.png", bk_images[1])
+
 
 # item 모든 이미지 불러오기
 def allItemLoad(item_index):
@@ -86,7 +146,7 @@ def itemIndexRandom(item_used, all_item_used):
 # 사용한 이미지 저장
 def itemUsedSave(item_index, item_used):
     for i in range(4):
-        # 이미지가 []이지 않을 때 저장
+        # 이미지가 null이 아닐때 저장
         if item_index[i] != []:
             item_used[i] += item_index[i]
     return item_used
@@ -102,6 +162,7 @@ def manipulation(bk_images, item_index):
     for i, bk_image in enumerate(bk_images):
         bk_image = (bk_image/max_pixel)
         
+
         # item all image 불러오기 [[],[],[],[]]
         # high
         if(i % 2 == 0):
@@ -132,15 +193,38 @@ def manipulation(bk_images, item_index):
                     #왼쪽 하단: img1[height1-min_height: height1, 0:min_width] = img_sub
                     #왼쪽 상단: img1[0:min_height,0:min_width] = img_sub
                     bk_image[random_max_height-item_height:random_max_height, random_max_width-item_width:random_max_width] *= item_image
-                    # print(random_max)
                 # low
                 else:
                     bk_image[random_max[j][z][0]-item_height:random_max[j][z][0], random_max[j][z][1]-item_width:random_max[j][z][1]] *= item_image
-     
-        bk_images[i] = bk_image
+        bk_images[i] = cv2.normalize(bk_image, None, 0, max_pixel, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
     return bk_images
 
 def main():
+    # save할 json
+    save_json = {'images':[], 'annotations':[], 'categories':
+                                                        [{'id': 1,
+                                                        'name': 'knife',
+                                                        'supercategory': 'item',
+                                                        'color': '040439',
+                                                        'metadata': ''},
+                                                        {'id': 2,
+                                                        'name': 'gun',
+                                                        'supercategory': 'item',
+                                                        'color': '040439',
+                                                        'metadata': ''},
+                                                        {'id': 3,
+                                                        'name': 'bettery',
+                                                        'supercategory': 'item',
+                                                        'color': '040439',
+                                                        'metadata': ''},
+                                                        {'id': 4,
+                                                        'name': 'laserpointer',
+                                                        'supercategory': 'item',
+                                                        'color': '040439',
+                                                        'metadata': ''}]   }
+    # category json
+    original_json = jsonLoad()
+
     # path
     background_path =  "D:/wp/data/background_manipulation/manipulation/background_image"
 
@@ -153,7 +237,9 @@ def main():
     # (확인용) 이미지 카테고리당 사용한 횟수 계산
     all_item_used = [0 for i in range(4)]
 
-    for file_name in range(0, 19999):
+    # image name
+    file_name = 0
+    while (file_name <= 20000):
         # print(file_name)
         # print(listLen(item_used))
         # print(len(item_used[0]), len(item_used[1]),len(item_used[2]),len(item_used[3]))
@@ -164,12 +250,14 @@ def main():
         bk_random_index = random.randrange(0, 8, 2)
         # background image list
         bk_images = []
+        
         # background
         bk_images.append(pngLoad(f"{background_path}/{background_file[bk_random_index]}"))
         bk_images.append(pngLoad(f"{background_path}/{background_file[bk_random_index+1]}"))
 
         # itemImage
         item_index, item_used = itemIndexRandom(item_used, all_item_used)
+
         # item 이미지 확인
         # for i in range(len(item_image)):
         #     for j in range(len(item_image[i])):
@@ -179,9 +267,18 @@ def main():
 
         # image manipulation
         bk_images = manipulation(bk_images, item_index)
-        cv2.imshow("manipulation_image_high", bk_images[0])
-        cv2.imshow("manipulation_image_low", bk_images[1])
-        cv2.waitKey(0)
+
+        # file save
+        pngSave(file_name, bk_images)
+
+        # json append
+        save_json = jsonAppend(original_json, save_json, file_name, item_index, bk_images)
+
+        file_name += 2
+
+    # json dump
+    jsonDump(save_json)
+
 
 
 
