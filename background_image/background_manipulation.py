@@ -28,7 +28,7 @@ def jsonDump(json_path, json_data):
 
 # json append
 def jsonAppend(original_json, save_json, file_name, item_index, bk_images):
-    
+    # orignal_json에서 하나씩 빼오고, 
     # high
     new_images = {'id': file_name + 1, #1부터 증가
                                 'dataset_id': 1,
@@ -40,7 +40,7 @@ def jsonAppend(original_json, save_json, file_name, item_index, bk_images):
 
     new_annotations = {'id': 1, # 0부터 증가
                         'image_id': file_name, 
-                        'category_id': ?,
+                        'category_id': 3,
                         # x, y, width, height
                         'bbox': [0, 0, img.shape[1], img.shape[0]],
                         'segmentation': [[new_seg]],
@@ -83,7 +83,7 @@ def jsonAppend(original_json, save_json, file_name, item_index, bk_images):
     time.sleep(2)
 
 # 폴더에 모든 이미지 이름 불러오기
-def FolderImgNameLoad(file_path):
+def folderImgNameLoad(file_path):
     file = [f for f in os.listdir(file_path) if f.endswith('.png')]
     file = natsort.natsorted(file)  # 정렬
     return file
@@ -229,7 +229,7 @@ def main():
     background_path =  "D:/wp/data/background_manipulation/manipulation/background_image"
 
     # image file name load
-    background_file = FolderImgNameLoad(background_path)
+    background_file = folderImgNameLoad(background_path)
         
     # 사용한 이미지 저장 리스트
     item_used = [[],[],[],[]]
