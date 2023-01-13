@@ -11,7 +11,7 @@ def main():
     #gun(o)
     #bettery(o)
     #laserpointer(o)
-    img_name = "bettery"
+    img_name = "laserpointer"
     folder_path = f"D:/wp/data/background_manipulation/augmentation&cateogrical/before_aug/{img_name}"
     folder_name = os.listdir(folder_path)
     augmentation(img_name, folder_name)
@@ -41,6 +41,7 @@ def png_load(file_path):
     file = natsort.natsorted(file)  # 정렬
     return file
 
+# 이미지 증강
 def augmentation(img_name, folder_name):
 
     save_json_data = {'images':[], 'annotations':[], 'categories':
@@ -67,10 +68,13 @@ def augmentation(img_name, folder_name):
 
     # 저장할 파일 이름은 0부터 9999
     save_file_name = 0
+    # low, high 이미지 크기를 같게 하기 위함
+    img_size = tuple()
+
     while(save_file_name < 9999):
+        
         # 카테고리
         for i in folder_name:
-            
             if save_file_name > 9999:
                 break
 
@@ -102,13 +106,20 @@ def augmentation(img_name, folder_name):
                 if (first_file_name == 0 and file_name % 2 == 0): #시작 파일이 짝수고, 현재 증강할 파일이 짝수면 random
                         update_cols = round(random.uniform(0.5, 1.5), 1)
                         update_rows = round(random.uniform(0.5, 1.5), 1)
+                        # 상대적인 비율로 축소, 확대
+                        img = cv2.resize(img, dsize=(
+                            0, 0), fx=update_cols, fy=update_rows, interpolation=cv2.INTER_LINEAR)
+                        img_size = (img.shape[1], img.shape[0])
                 elif (first_file_name != 0 and file_name % 2 != 0): #시작 파일이 홀수고, 현재 증강할 파일이 홀수면 random
                         update_cols = round(random.uniform(0.5, 1.5), 1)
                         update_rows = round(random.uniform(0.5, 1.5), 1)
+                        # 상대적인 비율로 축소, 확대
+                        img = cv2.resize(img, dsize=(
+                            0, 0), fx=update_cols, fy=update_rows, interpolation=cv2.INTER_LINEAR)
+                        img_size = (img.shape[1], img.shape[0])
+                else:
+                    img = cv2.resize(img, img_size, interpolation=cv2.INTER_LINEAR)
                 
-                # 상대적인 비율로 축소, 확대
-                update_img = cv2.resize(img, dsize=(
-                    0, 0), fx=update_cols, fy=update_rows, interpolation=cv2.INTER_LINEAR)
 
                 # segmentation update: seg(x) * update_rows, seg(y) * update_rows
                 new_seg = list()
@@ -123,18 +134,18 @@ def augmentation(img_name, folder_name):
                                 'dataset_id': json_data['images'][json_file_dic[f]]['dataset_id'],
                                 'path': save_path + '/' + str(save_file_name) + '.png',
                                 'file_name': str(save_file_name) + '.png',
-                                'width': update_img.shape[1],
-                                'height': update_img.shape[0]}
+                                'width': img.shape[1],
+                                'height': img.shape[0]}
                 save_json_data['images'].append(new_images)
 
                 new_annotations = {'id': save_file_name+1,
                                     'image_id': save_file_name+1,
                                     'category_id': 3,
                                     # x, y, width, height
-                                    'bbox': [0, 0, update_img.shape[1], update_img.shape[0]],
+                                    'bbox': [0, 0, img.shape[1], img.shape[0]],
                                     'segmentation': [[new_seg]],
                                     # height * width
-                                    'area': update_img.shape[0]*update_img.shape[1],
+                                    'area': img.shape[0]*img.shape[1],
                                     'iscrowd': False,
                                     'color': 'Unknown',
                                     'unitID': 1,
@@ -143,15 +154,14 @@ def augmentation(img_name, folder_name):
                                     'number2': 4,
                                     'weight': None}
                 save_json_data['annotations'].append(new_annotations)
-                
                 # 이미지 파일 저장
-                cv2.imwrite(save_path + '/' + str(save_file_name) + '.png', update_img)
+                cv2.imwrite(save_path + '/' + str(save_file_name) + '.png', img)
                 save_file_name += 1
 
             # json 파일 저장
             json_dump(save_json_path, save_json_data)
 
-
+# 이미지 증강 잘 되었는지 확인
 def filter_image(img_name):    
     file_path = f"D:/wp/data/background_manipulation/augmentation&cateogrical/after_aug/{img_name}/crop"
     json_path = f"D:/wp/data/background_manipulation/augmentation&cateogrical/after_aug/{img_name}/json/crop_data.json"
