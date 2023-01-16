@@ -31,32 +31,6 @@ def jsonDump(json_data):
 # json append
 def jsonAppend(original_json, save_json, file_name, item_index, bk_images, random_max):
     save_path = "D:/wp/data/background_manipulation/manipulation/manipulation_image/image"
-
-    # for j, categorical_images in enumerate(item_images):
-    #         # 카테고리 안에서 하나씩
-    #         for z, item_image in enumerate(categorical_images):
-
-    #             item_image = (item_image/max_pixel)
-
-    #             item_height, item_width = item_image.shape
-    #             bk_height, bk_width = bk_image.shape
-
-    #             # high
-    #             if(i % 2 == 0):
-    #                 random_max_height = random.randrange(item_height, bk_height, item_height)
-    #                 random_max_width = random.randrange(item_width, bk_width, item_width)
-    #                 random_max[j].append([random_max_height, random_max_width])
-    #                 #오른쪽 하단: img1[height1-min_height: height1, width1-min_width:width1] = img_sub
-    #                 #오른쪽 상단: img1[0:min_height, width1-min_width:width1] = img_sub
-    #                 #왼쪽 하단: img1[height1-min_height: height1, 0:min_width] = img_sub
-    #                 #왼쪽 상단: img1[0:min_height,0:min_width] = img_sub
-    #                 bk_image[random_max_height-item_height:random_max_height, random_max_width-item_width:random_max_width] *= item_image
-    #             # low
-    #             else:
-    #                 bk_image[random_max[j][z][0]-item_height:random_max[j][z][0], random_max[j][z][1]-item_width:random_max[j][z][1]] *= item_image
-    #     bk_images[i] = cv2.normalize(bk_image, None, 0, max_pixel, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
-    # return bk_images, random_max
-
     # high
     item_images = allItemLoad(item_index)
     new_images = {'id': file_name + 1, #1부터 증가
