@@ -5,7 +5,7 @@
 
 
 ## Tech/Framework Used
-- `Python 3.10.5`
+- `Python 3.8.8`
 
 __built with__
 - `VSCODE`
