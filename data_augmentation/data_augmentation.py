@@ -108,21 +108,6 @@ def augmentation(img_name):
             # 이미지 파일 저장
             cv2.imwrite(file_path + '/' + save_file_name + '.png', update_img)
 
-# 카테고리 4개
-# 1. knife
-# 2. gun
-# 3. bettery
-# 4. laserpointer
-# 이미지 합칠 때 1/max(픽셀)
-# 각각 가방, 칼 등등의 max를 1로 되게 픽셀 하나를 다 나누기
-# 한 카테고리당 10,000개, 이미지는 총 20,000개
-
-# 주어진 background(진함: low, 연함: high)에 해당 이미지를 합성, 
-
-
-    # json 파일 저장
-    json_dump(json_path, json_data)
-
             # 새로운 annotations와 new_images 보기
             # print(new_annotations)
             # print(new_images)
@@ -143,6 +128,9 @@ def augmentation(img_name):
             # cv2.fillConvexPoly(update_img, seg, color=(255,0,0))
             # cv2.imshow("img", update_img)
             # cv2.waitKey(0)
+
+    # json 파일 저장
+    json_dump(json_path, json_data)
 
 def filter_image(img_name):
     file_path = f"D:/wp/data/data_augmentation/{img_name}/crop"
