@@ -51,18 +51,23 @@ def jsonAppend(original_json, save_json, file_name, item_index, bk_images, rando
             # time.sleep(1)
             for index, seg in enumerate(original_json[category]['annotations'][original_file_name]['segmentation'][0][0]):
                 if ((index % 2) == 0):
-                    new_seg.append(seg+xy[0])
+                    new_seg.append(seg+(xy[1]-item_image.shape[1]))
                 else:
-                    new_seg.append(seg+xy[1])
+                    new_seg.append(seg+(xy[0]-item_image.shape[0]))
             annotations_len = len(save_json['annotations'])
             new_annotations = {'id': annotations_len, # 0부터 증가
                                 'image_id': file_name + 1,
                                 'category_id': category + 1,
                                 # x, y, width, height
-                                'bbox': [xy[0], xy[1], item_image.shape[1], item_image.shape[0]],
+                                # bk_image[random_max[j][z][0]-item_height:random_max[j][z][0], random_max[j][z][1]-item_width:random_max[j][z][1]] *= item_image
+                                # xy[0]: max_height
+                                # xy[1]: max_width
+                                # item_image.shape[0]: height
+                                # item_image.shape[1]: width
+                                'bbox': [xy[1]-item_image.shape[1], xy[0]-item_image.shape[0], item_image.shape[1], item_image.shape[0]],
                                 'segmentation': [[new_seg]],
                                 # height * width
-                                'area': xy[0]*xy[1]*item_image.shape[0]*item_image.shape[1],
+                                'area': (xy[1]-item_image.shape[1])*(xy[0]-item_image.shape[0])*(item_image.shape[0])*(item_image.shape[1]),
                                 'iscrowd': False,
                                 'color': 'Unknown',
                                 'unitID': 1,
@@ -92,19 +97,19 @@ def jsonAppend(original_json, save_json, file_name, item_index, bk_images, rando
             xy = random_max[category][index]
             for index, seg in enumerate(original_json[category]['annotations'][original_file_name]['segmentation'][0][0]):
                 if ((index % 2) == 0):
-                    new_seg.append(seg+xy[0])
+                    new_seg.append(seg+(xy[1]-item_image.shape[1]))
                 else:
-                    new_seg.append(seg+xy[1])
+                    new_seg.append(seg+(xy[0]-item_image.shape[0]))
 
             annotations_len = len(save_json['annotations'])
             new_annotations = {'id': annotations_len, # 0부터 증가
                                 'image_id': file_name + 2, 
                                 'category_id': category + 1,
                                 # x, y, width, height
-                                'bbox': [xy[0], xy[1], item_image.shape[1], item_image.shape[0]],
+                                'bbox': [xy[1]-item_image.shape[1], xy[0]-item_image.shape[0], item_image.shape[1], item_image.shape[0]],
                                 'segmentation': [[new_seg]],
                                 # height * width
-                                'area': xy[0]*xy[1]*item_image.shape[0]*item_image.shape[1],
+                                'area': (xy[1]-item_image.shape[1])*(xy[0]-item_image.shape[0])*(item_image.shape[0])*(item_image.shape[1]),
                                 'iscrowd': False,
                                 'color': 'Unknown',
                                 'unitID': 1,
@@ -113,7 +118,6 @@ def jsonAppend(original_json, save_json, file_name, item_index, bk_images, rando
                                 'number2': 4,
                                 'weight': None}
             save_json['annotations'].append(new_annotations)
-    time.sleep(2)
     return save_json
 
 # 폴더에 모든 이미지 이름 불러오기
