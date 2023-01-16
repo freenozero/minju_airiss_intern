@@ -22,65 +22,125 @@ def jsonLoad():
     return json_data
 
 # json dump
-def jsonDump(json_path, json_data):
+def jsonDump(json_data):
+    json_path = "D:/wp/data/background_manipulation/manipulation/manipulation_image/json/data.json"
+
     with open(json_path, 'w') as json_file:
         json_data = json.dump(json_data, json_file)
 
 # json append
-def jsonAppend(original_json, save_json, file_name, item_index, bk_images):
-    # orignal_json에서 하나씩 빼오고, 
+def jsonAppend(original_json, save_json, file_name, item_index, bk_images, random_max):
+    save_path = "D:/wp/data/background_manipulation/manipulation/manipulation_image/image"
+
+    # for j, categorical_images in enumerate(item_images):
+    #         # 카테고리 안에서 하나씩
+    #         for z, item_image in enumerate(categorical_images):
+
+    #             item_image = (item_image/max_pixel)
+
+    #             item_height, item_width = item_image.shape
+    #             bk_height, bk_width = bk_image.shape
+
+    #             # high
+    #             if(i % 2 == 0):
+    #                 random_max_height = random.randrange(item_height, bk_height, item_height)
+    #                 random_max_width = random.randrange(item_width, bk_width, item_width)
+    #                 random_max[j].append([random_max_height, random_max_width])
+    #                 #오른쪽 하단: img1[height1-min_height: height1, width1-min_width:width1] = img_sub
+    #                 #오른쪽 상단: img1[0:min_height, width1-min_width:width1] = img_sub
+    #                 #왼쪽 하단: img1[height1-min_height: height1, 0:min_width] = img_sub
+    #                 #왼쪽 상단: img1[0:min_height,0:min_width] = img_sub
+    #                 bk_image[random_max_height-item_height:random_max_height, random_max_width-item_width:random_max_width] *= item_image
+    #             # low
+    #             else:
+    #                 bk_image[random_max[j][z][0]-item_height:random_max[j][z][0], random_max[j][z][1]-item_width:random_max[j][z][1]] *= item_image
+    #     bk_images[i] = cv2.normalize(bk_image, None, 0, max_pixel, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
+    # return bk_images, random_max
+
     # high
+    item_images = allItemLoad(item_index)
     new_images = {'id': file_name + 1, #1부터 증가
                                 'dataset_id': 1,
                                 'path': save_path + '/' + str(file_name) + '.png',
                                 'file_name': str(file_name) + '.png',
-                                'width': img[0].shape[1],
-                                'height': img[0].shape[0]}
-    data_json['images'].append(new_images)
+                                'width': bk_images[0].shape[1],
+                                'height': bk_images[0].shape[0]}
 
-    new_annotations = {'id': 1, # 0부터 증가
-                        'image_id': file_name, 
-                        'category_id': 3,
-                        # x, y, width, height
-                        'bbox': [0, 0, img.shape[1], img.shape[0]],
-                        'segmentation': [[new_seg]],
-                        # height * width
-                        'area': img[0].shape[0]*img[0].shape[1],
-                        'iscrowd': False,
-                        'color': 'Unknown',
-                        'unitID': 1,
-                        'registNum': 1,
-                        'number1': 4,
-                        'number2': 4,
-                        'weight': None}
-    data_json['annotations'].append(new_annotations)
+    save_json['images'].append(new_images)
+
+    for category, file_index in enumerate(item_index):
+        for index, original_file_name in enumerate(file_index):
+            item_image = item_images[category][index]
+            new_seg = list()
+            # print(random_max[category][index])
+            xy = random_max[category][index]
+            # time.sleep(1)
+            for index, seg in enumerate(original_json[category]['annotations'][original_file_name]['segmentation'][0][0]):
+                if ((index % 2) == 0):
+                    new_seg.append(seg+xy[0])
+                else:
+                    new_seg.append(seg+xy[1])
+            annotations_len = len(save_json['annotations'])
+            new_annotations = {'id': annotations_len, # 0부터 증가
+                                'image_id': file_name + 1,
+                                'category_id': category + 1,
+                                # x, y, width, height
+                                'bbox': [xy[0], xy[1], item_image.shape[1], item_image.shape[0]],
+                                'segmentation': [[new_seg]],
+                                # height * width
+                                'area': xy[0]*xy[1]*item_image.shape[0]*item_image.shape[1],
+                                'iscrowd': False,
+                                'color': 'Unknown',
+                                'unitID': 1,
+                                'registNum': 1,
+                                'number1': 4,
+                                'number2': 4,
+                                'weight': None}
+            save_json['annotations'].append(new_annotations)
 
     # low
+    matrix = [[1 for col in range(len(item_index[row]))] for row in range(len(item_index))]
+    item_index = [[c + d for c, d in zip(a,b)] for a, b in zip(item_index, matrix)]
+    item_images = allItemLoad(item_index)
     new_images = {'id': file_name + 2,
-                            'dataset_id': 1,
-                            'path': save_path + '/' + str(file_name) + '.png',
-                            'file_name': str(file_name) + '.png',
-                            'width': img[0].shape[1],
-                            'height': img[0].shape[0]}
-    data_json['images'].append(new_images)
+                                'dataset_id': 1,
+                                'path': save_path + '/' + str(file_name + 1) + '.png',
+                                'file_name': str(file_name + 1) + '.png',
+                                'width': bk_images[0].shape[1],
+                                'height': bk_images[0].shape[0]}
+    save_json['images'].append(new_images)
 
-    new_annotations = {'id': 1, # 0부터 증가
-                        'image_id': file_name, 
-                        'category_id': 3,
-                        # x, y, width, height
-                        'bbox': [0, 0, img.shape[1], img.shape[0]],
-                        'segmentation': [[new_seg]],
-                        # height * width
-                        'area': img[1].shape[0]*img[1].shape[1],
-                        'iscrowd': False,
-                        'color': 'Unknown',
-                        'unitID': 1,
-                        'registNum': 1,
-                        'number1': 4,
-                        'number2': 4,
-                        'weight': None}
-    data_json['annotations'].append(new_annotations)
+    for category, file_index in enumerate(item_index):
+        for index, original_file_name in enumerate(file_index):
+            item_image = item_images[category][index]
+
+            new_seg = list()
+            xy = random_max[category][index]
+            for index, seg in enumerate(original_json[category]['annotations'][original_file_name]['segmentation'][0][0]):
+                if ((index % 2) == 0):
+                    new_seg.append(seg+xy[0])
+                else:
+                    new_seg.append(seg+xy[1])
+
+            annotations_len = len(save_json['annotations'])
+            new_annotations = {'id': annotations_len, # 0부터 증가
+                                'image_id': file_name + 2, 
+                                'category_id': category + 1,
+                                # x, y, width, height
+                                'bbox': [xy[0], xy[1], item_image.shape[1], item_image.shape[0]],
+                                'segmentation': [[new_seg]],
+                                # height * width
+                                'area': xy[0]*xy[1]*item_image.shape[0]*item_image.shape[1],
+                                'iscrowd': False,
+                                'color': 'Unknown',
+                                'unitID': 1,
+                                'registNum': 1,
+                                'number1': 4,
+                                'number2': 4,
+                                'weight': None}
+            save_json['annotations'].append(new_annotations)
     time.sleep(2)
+    return save_json
 
 # 폴더에 모든 이미지 이름 불러오기
 def folderImgNameLoad(file_path):
@@ -197,7 +257,7 @@ def manipulation(bk_images, item_index):
                 else:
                     bk_image[random_max[j][z][0]-item_height:random_max[j][z][0], random_max[j][z][1]-item_width:random_max[j][z][1]] *= item_image
         bk_images[i] = cv2.normalize(bk_image, None, 0, max_pixel, cv2.NORM_MINMAX, dtype=cv2.CV_16U)
-    return bk_images
+    return bk_images, random_max
 
 def main():
     # save할 json
@@ -226,7 +286,7 @@ def main():
     original_json = jsonLoad()
 
     # path
-    background_path =  "D:/wp/data/background_manipulation/manipulation/background_image"
+    background_path = "D:/wp/data/background_manipulation/manipulation/background_image"
 
     # image file name load
     background_file = folderImgNameLoad(background_path)
@@ -239,7 +299,7 @@ def main():
 
     # image name
     file_name = 0
-    while (file_name <= 20000):
+    while (file_name <= 19):
         # print(file_name)
         # print(listLen(item_used))
         # print(len(item_used[0]), len(item_used[1]),len(item_used[2]),len(item_used[3]))
@@ -266,23 +326,21 @@ def main():
         #         cv2.waitKey(0)
 
         # image manipulation
-        bk_images = manipulation(bk_images, item_index)
-
+        bk_images, random_max = manipulation(bk_images, item_index)
+        
         # file save
         pngSave(file_name, bk_images)
 
         # json append
-        save_json = jsonAppend(original_json, save_json, file_name, item_index, bk_images)
+        save_json = jsonAppend(original_json, save_json, file_name, item_index, bk_images, random_max)
+
+        # json dump
+        jsonDump(save_json)
 
         file_name += 2
 
     # json dump
     jsonDump(save_json)
-
-
-
-
-        
 
 if __name__ == "__main__":
     main()
