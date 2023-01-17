@@ -43,7 +43,7 @@ def groundTruths():
         if(before_image_name != image_name):
             original_img = cv2.imread(f"{origin_img_path}/{image_name}", 1)
             ground_truths_img = original_img.copy()
-            print(ground_truths_img.shape)
+            # print(ground_truths_img.shape)
             before_image_name = image_name
 
         seg = []
@@ -76,7 +76,7 @@ def groundTruths():
         if(before_image_name == image_name):
             # cv2.imshow("add_img",  add_img)
             # cv2.waitKey(0)
-            print(f"{ground_truths_path}/{image_name}")
+            # print(f"{ground_truths_path}/{image_name}")
             cv2.imwrite(f"{ground_truths_path}/{image_name}", add_img)
 
 if __name__ == "__main__":
