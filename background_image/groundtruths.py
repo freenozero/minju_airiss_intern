@@ -31,13 +31,20 @@ def groundTruths():
     json_data = jsonLoad(json_path)
     
     annotations = json_data['annotations']
+    
+    # 이전 이미지 이름 저장
+    before_image_name = 0
+
     #annotaion 불러오기
     for annotation in annotations:
         image_id = annotation["image_id"]
-        print(origin_files[image_id-1])
         image_name = origin_files[image_id-1]
-        original_img = cv2.imread(f"{origin_img_path}/{image_name}", -1)
-        ground_truths_img = original_img.copy()
+
+        if(before_image_name != image_name):
+            original_img = cv2.imread(f"{origin_img_path}/{image_name}", 1)
+            ground_truths_img = original_img.copy()
+            print(ground_truths_img.shape)
+            before_image_name = image_name
 
         seg = []
         for index, x in enumerate(annotation['segmentation'][0][0]):
@@ -58,17 +65,19 @@ def groundTruths():
         # original_img랑 filter_img 합성하기
         add_img = cv2.addWeighted(original_img, 0.7, ground_truths_img, 0.3, 3)
 
-        # # add_image 폴더 없을 시 생성
-        # if not os.path.exists(ground_truths_path):
-        #     os.makedirs(ground_truths_path)
+        # add_image 폴더 없을 시 생성
+        if not os.path.exists(ground_truths_path):
+            os.makedirs(ground_truths_path)
 
         # cv2.imshow("original_img", original_img)
-        cv2.imshow("add_img",  add_img)
-        cv2.waitKey(0)
+        
 
         # 합성한 이미지 저장
-        # print(add_img)
-        # cv2.imwrite(f"{ground_truths_path}/{add_img}")
+        if(before_image_name == image_name):
+            # cv2.imshow("add_img",  add_img)
+            # cv2.waitKey(0)
+            print(f"{ground_truths_path}/{image_name}")
+            cv2.imwrite(f"{ground_truths_path}/{image_name}", add_img)
 
 if __name__ == "__main__":
     main()
