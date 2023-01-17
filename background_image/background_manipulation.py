@@ -170,7 +170,7 @@ def itemIndexRandom(item_used, all_item_used):
                 # 사용하지 않은 a가 나올 때 까지
                 while (index in item_used[i]):
                     # 10,000장을 다 사용시
-                    if (len(item_used[i]) >= 10000):
+                    if (len(item_used[i]) >= 5000):
                         item_used[i] = []
                         
                     index = random.randrange(0, 9999, 2)
@@ -277,10 +277,10 @@ def main():
 
     # image name
     file_name = 0
-    while (file_name <= 19):
-        # print(file_name)
+    while (file_name <= 19999):
+        print(file_name)
         # print(listLen(item_used))
-        # print(len(item_used[0]), len(item_used[1]),len(item_used[2]),len(item_used[3]))
+        print(len(item_used[0]), len(item_used[1]),len(item_used[2]),len(item_used[3]))
         # print(all_item_used)
 
 
@@ -313,7 +313,7 @@ def main():
         save_json = jsonAppend(original_json, save_json, file_name, item_index, bk_images, random_max)
 
         # json dump
-        jsonDump(save_json)
+        # jsonDump(save_json)
 
         file_name += 2
 
