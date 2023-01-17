@@ -34,10 +34,12 @@ def groundTruths():
     
     # 이전 이미지 이름 저장
     before_image_name = 0
+    categorical = [(255, 0, 0), (0, 0, 255), (255, 255, 0), (0, 255, 0)]
 
     #annotaion 불러오기
     for annotation in annotations:
         image_id = annotation["image_id"]
+        category_id = annotation["category_id"]-1
         image_name = origin_files[image_id-1]
 
         if(before_image_name != image_name):
@@ -56,11 +58,11 @@ def groundTruths():
         bbox = annotation['bbox']
 
         # seg 칠하기
-        cv2.fillPoly(ground_truths_img, [seg], (0, 0, 255))
+        cv2.fillPoly(ground_truths_img, [seg], categorical[category_id])
 
         # bbox 그리기
         cv2.rectangle(ground_truths_img, (bbox[0], bbox[1]),
-                      (bbox[2]+bbox[0], bbox[3]+bbox[1]), (255, 0, 0, 1), 3)
+                      (bbox[2]+bbox[0], bbox[3]+bbox[1]), categorical[category_id], 3)
 
         # original_img랑 filter_img 합성하기
         add_img = cv2.addWeighted(original_img, 0.7, ground_truths_img, 0.3, 3)
