@@ -1,3 +1,4 @@
+@@ -0,0 +1,116 @@
 # https://tutorials.pytorch.kr/beginner/blitz/cifar10_tutorial.html#sphx-glr-beginner-blitz-cifar10-tutorial-py
 
 # 이미지 분류기 학습
@@ -107,10 +108,10 @@ print('Finished Training')
 PATH = './cifar_net.pth'
 torch.save(net.state_dict(), PATH)
 
-## 5. 시험용 데이터로 신경망 검사하기
+## 5. 시험용 데이터로 신경망 검사
 dataiter = iter(testloader)
 images, labels = dataiter.next()
 
-# 이미지를 출력합니다.
+# 이미지를 출력
 imshow(torchvision.utils.make_grid(images))
 print('GroundTruth: ', ' '.join(f'{classes[labels[j]]:5s}' for j in range(4)))
