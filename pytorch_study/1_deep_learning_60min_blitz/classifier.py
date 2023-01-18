@@ -1,4 +1,3 @@
-@@ -0,0 +1,116 @@
 # https://tutorials.pytorch.kr/beginner/blitz/cifar10_tutorial.html#sphx-glr-beginner-blitz-cifar10-tutorial-py
 
 # 이미지 분류기 학습
@@ -112,6 +111,59 @@ torch.save(net.state_dict(), PATH)
 dataiter = iter(testloader)
 images, labels = dataiter.next()
 
-# 이미지를 출력
+### 이미지를 출력
 imshow(torchvision.utils.make_grid(images))
 print('GroundTruth: ', ' '.join(f'{classes[labels[j]]:5s}' for j in range(4)))
+
+
+
+# 신경망이 어떻게 학습했는지
+net = Net()
+net.load_state_dict(torch.load(PATH))
+
+outputs = net(images)
+
+## 가장 가까운 인덱스 뽑기
+_, predicted = torch.max(outputs, 1)
+
+print('Predicted: ', ' '.join(f'{classes[predicted[j]]:5s}'
+                              for j in range(4)))
+
+## 전체 데이터 셋에서는?
+correct = 0
+total = 0
+### 학습 중이 아니라서 출력에 대한 변화도 계산 불필요
+with torch.no_grad():
+    for data in testloader:
+        images, labels = data
+        ### 신경망에 이미지를 통과시켜 출력을 계산
+        outputs = net(images)
+        ### 가장 높은 값(energy)를 갖는 분류(class)를 정답으로 선택
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
+
+
+## best, worst
+### 각 분류(class)에 대한 예측값 계산을 위해 준비
+correct_pred = {classname: 0 for classname in classes}
+total_pred = {classname: 0 for classname in classes}
+
+### 변화도 x
+with torch.no_grad():
+    for data in testloader:
+        images, labels = data
+        outputs = net(images)
+        _, predictions = torch.max(outputs, 1)
+        ### 각 분류별로 올바른 예측 수를 모움
+        for label, prediction in zip(labels, predictions):
+            if label == prediction:
+                correct_pred[classes[label]] += 1
+            total_pred[classes[label]] += 1
+
+### 각 분류별 정확도(accuracy)를 출력
+for classname, correct_count in correct_pred.items():
+    accuracy = 100 * float(correct_count) / total_pred[classname]
+    print(f'Accuracy for class: {classname:5s} is {accuracy:.1f} %')
