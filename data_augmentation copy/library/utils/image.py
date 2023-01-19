@@ -7,4 +7,4 @@ class image:
 
     '''Image save'''
     def save_image(image_path, image_name, image):
-        cv2.imwrite(f'{image_path}/{image_name}', image)
+        cv2.imwrite(f'{image_path}/{image_name}.png', image)

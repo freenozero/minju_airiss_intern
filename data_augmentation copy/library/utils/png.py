@@ -4,18 +4,21 @@ from library.utils.image import image
 class png():
 
     def __init__(self):
-        self.even = True
+        pass
     
     '''Load files'''
     def load_files(path):
         file_list = [f for f in os.listdir(path)]
         file_list = natsort.natsorted(file_list)
+        even = png.even_distinction(file_list[0].rstrip('.png'))
+        
+        file_last_name = (file_list[len(file_list)-1]).rstrip('.png')
 
         image_data = []
         for image_name in file_list:
             image_data.append(image.load_image(f'{path}/{image_name}'))
 
-        return image_data
+        return image_data, even, file_last_name
 
     def make_dir(path):
         try:
@@ -25,12 +28,11 @@ class png():
             print(ex)
 
     '''even distinction: even=True & odd=False'''
-    def set_even(self, file_list):
-        even_odd = int(file_list[0].rstrip('.png')) % 2
-        if (even_odd == 0):
-            self.even = True
+    def even_distinction(file):
+        if (int(file) % 2 == 0):
+            return True
         else:
-            self.even = False
+            return False
 
     '''Remove file extension'''
     def file_name(self, file, ends_with):
