@@ -157,7 +157,7 @@ def filter_image(img_name):
                 seg.append(([json_data['annotations'][json_file_dic[i]]['segmentation'][0][0]
                            [index], json_data['annotations'][json_file_dic[i]]['segmentation'][0][0][index+1]]))
         seg = np.array(seg, np.int32)
-
+        print(seg)
         # bbox 불러오기
         bbox = json_data['annotations'][json_file_dic[i]]['bbox']
 

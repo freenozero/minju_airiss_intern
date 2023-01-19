@@ -1,5 +1,5 @@
 # from library.images.groundtruths import Groundtruth
-from library.utils.header import random, cv2, np
+from library.utils.header import random, cv2, os
 
 from library.utils.png import png
 from library.utils.json import json
@@ -8,20 +8,15 @@ from library.utils.image import image
 from task._abstract_ import AbstractTaskCase
 '''Augment all the files in the folder'''
 class augmentation(AbstractTaskCase):
-    def __init__(self):
-        pass
-    #     self.gt = Groundtruth()
 
     def set_data(self, path):
         image_data, even, file_last_name = png.load_files(f'{path}/crop')
         json_data = json.load_json(f'{path}/json/crop_data.json')
-
         return image_data, even, file_last_name, json_data
     
-    def resize(self, image_data, json_data, even, file_last_name, path):
+    def resize(self, path, image_data, json_data, even, file_last_name, loop):
         image_data_copy = image_data.copy()
-        path = f'{path}/crop'
-        for _ in range(0, 1):
+        for _ in range(0, loop):
             for index, original_image in enumerate(image_data_copy):
                 file_last_name = f'{file_last_name[:-1]}{int(file_last_name[-1])+1}'
                 
@@ -35,12 +30,7 @@ class augmentation(AbstractTaskCase):
                 update_image = cv2.resize(original_image, dsize=(
                 0, 0), fx=update_cols, fy=update_rows, interpolation=cv2.INTER_LINEAR)
 
-                new_seg = list()
-                for index, seg in enumerate(json_data['annotations'][index]['segmentation'][0][0]):
-                    if ((index % 2) == 0):
-                        new_seg.append(round(seg * update_cols, 1))
-                    else:
-                        new_seg.append(round(seg * update_rows, 1)) 
+                seg = json.update_segmentation(json_data['annotations'][index]['segmentation'], update_rows, update_cols)
                 
                 new_images = {'id': len(json_data['images']) +1,
                             'dataset_id': json_data['images'][index]['dataset_id'],
@@ -48,13 +38,13 @@ class augmentation(AbstractTaskCase):
                             'file_name': file_last_name + '.png',
                             'width': update_image.shape[1],
                             'height': update_image.shape[0]}
-                json_data['images'].append(new_images)
-                new_annotations = {'id': len(json_data['images']),
-                                    'image_id': len(json_data['images']),
+                
+                new_annotations = {'id': len(json_data['images']) +1,
+                                    'image_id': len(json_data['images']) +1,
                                     'category_id': json_data['annotations'][index]['category_id'],
                                     # x, y, width, height
                                     'bbox': [0, 0, update_image.shape[1], update_image.shape[0]],
-                                    'segmentation': [[new_seg]],
+                                    'segmentation': seg,
                                     # height * width
                                     'area': update_image.shape[0]*update_image.shape[1],
                                     'iscrowd': json_data['annotations'][index]['iscrowd'],
@@ -64,26 +54,35 @@ class augmentation(AbstractTaskCase):
                                     'number1': json_data['annotations'][index]['number1'],
                                     'number2': json_data['annotations'][index]['number2'],
                                     'weight': json_data['annotations'][index]['weight']}
+                json_data['images'].append(new_images)
                 json_data['annotations'].append(new_annotations)
-                image.save_image(f'{path}/crop', file_last_name, update_image)
-
-        json.dump_json(f'{path}/json/crop_data.json', json_data)
+                image_data.append(update_image)
         return image_data, json_data
 
-    # def save(image_data, json_data):
-    #     pass
+    def groundtruths(self, image_data, json_data):
+        groundtruths_data = []
+        for index, original_image in enumerate(image_data):
+            groundtruths_image = original_image.copy()
+            seg = json.return_segmentation(json_data['annotations'][index]['segmentation'])
+            bbox = json_data['annotations'][index]['bbox']
+            cv2.fillConvexPoly(groundtruths_image, seg, (0, 0, 255))
+            cv2.rectangle(groundtruths_image, (bbox[0], bbox[1]),
+                                                (bbox[2], bbox[3]), (255, 0, 0), 3)
+            
+            groundtruths_image = cv2.addWeighted(original_image, 0.7, groundtruths_image, 0.3, 3)
+            groundtruths_data.append(groundtruths_image)
+        return groundtruths_data
 
-    def view(image_data, json_data):
-        pass
+    def save(self, path, resize_data, groundtruths_data, json_data, file_last_name):
+            if not os.path.exists(f'{path}/groundtruths'):
+                os.makedirs(f'{path}/groundtruths')
 
-    def run(self):
-        path = "D:/wp/data/data_augmentation/xray_scissors_5"
-        image_data, even, file_last_name, json_data = self.set_data(path)
-        image_data, json_data = self.resize(image_data, json_data, even, file_last_name, path)
-        self.view(image_data, json_data)
-        
+            for data in resize_data:
+                file_last_name = f'{file_last_name[:-1]}{int(file_last_name[-1])+1}'
+                image.save_image(f'{path}/crop', file_last_name, data)
 
-'''main'''
-def run():
-    aug = augmentation()
-    aug.run()
+            for data in groundtruths_data:
+                file_last_name = f'{file_last_name[:-1]}{int(file_last_name[-1])+1}'
+                image.save_image(f'{path}/groundtruths', file_last_name, data)
+
+            json.dump_json(f'{path}/json/crop_data.json', json_data)

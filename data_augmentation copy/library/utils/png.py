@@ -8,7 +8,7 @@ class png():
     
     '''Load files'''
     def load_files(path):
-        file_list = [f for f in os.listdir(path)]
+        file_list =  [f for f in os.listdir(path) if f.endswith('.png')]
         file_list = natsort.natsorted(file_list)
         even = png.even_distinction(file_list[0].rstrip('.png'))
         
