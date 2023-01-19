@@ -1,4 +1,5 @@
-from library.utils.header import os, natsort, cv2
+from library.utils.header import os, natsort
+from library.utils.image import image
 
 class png():
 
@@ -6,23 +7,17 @@ class png():
         self.even = True
     
     '''Load files'''
-    def load_files(self, path):
+    def load_files(path):
         file_list = [f for f in os.listdir(path)]
         file_list = natsort.natsorted(file_list)
 
         image_data = []
         for image_name in file_list:
-            image_data.append(self.load_image(f'{path}/{image_name}'))
-    
-    '''Image load'''
-    def load_image(image_path):
-        return cv2.imread(image_path, 1)
+            image_data.append(image.load_image(f'{path}/{image_name}'))
 
-    '''Image save'''
-    def save_image(image_path, image_name, image):
-        cv2.imwrite(f'{image_path}/{image_name}', image)
+        return image_data
 
-    def make_dir(self, path):
+    def make_dir(path):
         try:
             if not os.path.exists(path):
                 os.makedirs(path)

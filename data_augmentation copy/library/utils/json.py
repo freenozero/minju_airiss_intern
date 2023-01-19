@@ -4,7 +4,7 @@ class json:
     '''Load json file'''
     def load_json(json_path):
         with open(json_path) as json_file:
-            json_data = json.load(json_file)
+            json_data = js.load(json_file)
             
         json_file_dic = {}
         # file_name = i 형식
