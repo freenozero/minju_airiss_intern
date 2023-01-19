@@ -1,15 +1,26 @@
-from library.utils.header import os, natsort
+from library.utils.header import os, natsort, cv2
 
 class png():
 
-    def __init__(self, ends_with):
-        self.ends_with = ends_with
+    def __init__(self):
         self.even = True
     
     '''Load files'''
     def load_files(self, path):
-        file_list = [f for f in os.listdir(path) if f.endswith(self.ends_with)]
-        return natsort.natsorted(file_list)
+        file_list = [f for f in os.listdir(path)]
+        file_list = natsort.natsorted(file_list)
+
+        image_data = []
+        for image_name in file_list:
+            image_data.append(self.load_image(f'{path}/{image_name}'))
+    
+    '''Image load'''
+    def load_image(image_path):
+        return cv2.imread(image_path, 1)
+
+    '''Image save'''
+    def save_image(image_path, image_name, image):
+        cv2.imwrite(f'{image_path}/{image_name}', image)
 
     def make_dir(self, path):
         try:
@@ -27,5 +38,5 @@ class png():
             self.even = False
 
     '''Remove file extension'''
-    def file_name(self, file):
-        return (file.split("/")[-1]).restrip(self.ends_with)
+    def file_name(self, file, ends_with):
+        return (file.split("/")[-1]).restrip(ends_with)
