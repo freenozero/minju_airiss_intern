@@ -1,36 +1,33 @@
-# from library.images.groundtruths import Groundtruth
-from library.utils.header import random, cv2, os
+from library.utils.header import cv2, os
 
-from library.utils.png import png
-from library.utils.json import json
 from library.utils.image import image
+from library.utils.json import json
+from library.utils.filesfolder import filesfolder
+from library.utils.reshape import reshape
 
-from task._abstract_ import AbstractTaskCase
-'''Augment all the files in the folder'''
+from augmentation._abstract_ import AbstractTaskCase
+
 class augmentation(AbstractTaskCase):
+    '''Augment all the files in the folder'''
 
     def set_data(self, path):
-        image_data, even, file_last_name = png.load_files(f'{path}/crop')
+        image_data, even, file_last_name = filesfolder.load_files(f'{path}/crop')
         json_data = json.load_json(f'{path}/json/crop_data.json')
         return image_data, even, file_last_name, json_data
     
     def resize(self, path, image_data, json_data, even, file_last_name, loop):
         image_data_copy = image_data.copy()
+        update_cols = 1
+        update_rows = 1
         for _ in range(0, loop):
             for index, original_image in enumerate(image_data_copy):
-                file_last_name = f'{file_last_name[:-1]}{int(file_last_name[-1])+1}'
-                
-                if(even and png.even_distinction(file_last_name)):
-                    update_cols = round(random.uniform(0.5, 1.5), 1)
-                    update_rows = round(random.uniform(0.5, 1.5), 1)
-                elif(not even and png.even_distinction(file_last_name)):
-                    update_cols = round(random.uniform(0.5, 1.5), 1)
-                    update_rows = round(random.uniform(0.5, 1.5), 1)
+                filesfolder.file_naming(path, file_last_name)
+                update_cols, update_rows = reshape.random(even, file_last_name, update_cols, update_rows)              
 
                 update_image = cv2.resize(original_image, dsize=(
                 0, 0), fx=update_cols, fy=update_rows, interpolation=cv2.INTER_LINEAR)
 
-                seg = json.update_segmentation(json_data['annotations'][index]['segmentation'], update_rows, update_cols)
+                seg = reshape.update_segmentation(json_data['annotations'][index]['segmentation'], update_rows, update_cols)
                 
                 new_images = {'id': len(json_data['images']) +1,
                             'dataset_id': json_data['images'][index]['dataset_id'],
@@ -63,7 +60,7 @@ class augmentation(AbstractTaskCase):
         groundtruths_data = []
         for index, original_image in enumerate(image_data):
             groundtruths_image = original_image.copy()
-            seg = json.return_segmentation(json_data['annotations'][index]['segmentation'])
+            seg = reshape.return_segmentation(json_data['annotations'][index]['segmentation'][0][0])
             bbox = json_data['annotations'][index]['bbox']
             cv2.fillConvexPoly(groundtruths_image, seg, (0, 0, 255))
             cv2.rectangle(groundtruths_image, (bbox[0], bbox[1]),
@@ -77,12 +74,9 @@ class augmentation(AbstractTaskCase):
             if not os.path.exists(f'{path}/groundtruths'):
                 os.makedirs(f'{path}/groundtruths')
 
-            for data in resize_data:
-                file_last_name = f'{file_last_name[:-1]}{int(file_last_name[-1])+1}'
-                image.save_image(f'{path}/crop', file_last_name, data)
-
-            for data in groundtruths_data:
-                file_last_name = f'{file_last_name[:-1]}{int(file_last_name[-1])+1}'
-                image.save_image(f'{path}/groundtruths', file_last_name, data)
+            for i in range(len(resize_data)):
+                file_last_name = filesfolder.file_naming(path, file_last_name)
+                image.save_image(f'{path}/crop', file_last_name, resize_data[i])
+                image.save_image(f'{path}/groundtruths', file_last_name, groundtruths_data[i])
 
             json.dump_json(f'{path}/json/crop_data.json', json_data)
