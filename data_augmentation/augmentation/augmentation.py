@@ -23,7 +23,6 @@ class augmentation(AbstractTaskCase):
         groundtruths_json = []
 
         file_num = (int(file_last_name) - len(image_data)+1)
-        print()
         for _ in range(0, loop):
             for index, original_image in enumerate(image_data_copy):
                 file_last_name = filesfolder.file_naming(path, file_last_name)
