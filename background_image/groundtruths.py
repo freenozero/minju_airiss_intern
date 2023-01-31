@@ -39,8 +39,8 @@ def groundTruths():
     #annotaion 불러오기
     for annotation in annotations:
         image_id = annotation["image_id"]
-        category_id = (annotation["category_id"] - 1)
-        image_name = origin_files[image_id-1]
+        category_id = (annotation["category_id"])
+        image_name = origin_files[image_id]
 
         if(before_image_name != image_name):
             original_img = cv2.imread(f"{origin_img_path}/{image_name}", 1)
@@ -62,7 +62,7 @@ def groundTruths():
 
         # bbox 그리기
         cv2.rectangle(ground_truths_img, (bbox[0], bbox[1]),
-                      (bbox[2]+bbox[0], bbox[3]+bbox[1]), category_color[category_id], 3)
+                      (bbox[2], bbox[3]), category_color[category_id], 3)
 
         # original_img랑 filter_img 합성하기
         add_img = cv2.addWeighted(original_img, 0.7, ground_truths_img, 0.3, 3)

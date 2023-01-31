@@ -33,7 +33,7 @@ def jsonAppend(original_json, save_json, file_name, item_index, bk_images, rando
     save_path = "D:/wp/data/background_manipulation/manipulation/manipulation_image/image"
     # high
     item_images = allItemLoad(item_index)
-    new_images = {'id': file_name + 1, #1부터 증가
+    new_images = {'id': file_name,
                                 'dataset_id': 1,
                                 'path': save_path + '/' + str(file_name) + '.png',
                                 'file_name': str(file_name) + '.png',
@@ -56,15 +56,17 @@ def jsonAppend(original_json, save_json, file_name, item_index, bk_images, rando
                     new_seg.append(seg+(xy[0]-item_image.shape[0]))
             annotations_len = len(save_json['annotations'])
             new_annotations = {'id': annotations_len, # 0부터 증가
-                                'image_id': file_name + 1,
-                                'category_id': category + 1,
+                                'image_id': file_name,
+                                'category_id': category,
                                 # x, y, width, height
                                 # bk_image[random_max[j][z][0]-item_height:random_max[j][z][0], random_max[j][z][1]-item_width:random_max[j][z][1]] *= item_image
                                 # xy[0]: max_height
                                 # xy[1]: max_width
                                 # item_image.shape[0]: height
                                 # item_image.shape[1]: width
-                                'bbox': [xy[1]-item_image.shape[1], xy[0]-item_image.shape[0], item_image.shape[1], item_image.shape[0]],
+
+                                # x, y, x1, y1
+                                'bbox': [xy[1]-item_image.shape[1], xy[0]-item_image.shape[0], xy[1], xy[0]],
                                 'segmentation': [[new_seg]],
                                 # height * width
                                 'area': (xy[1]-item_image.shape[1])*(xy[0]-item_image.shape[0])*(item_image.shape[0])*(item_image.shape[1]),
@@ -81,10 +83,10 @@ def jsonAppend(original_json, save_json, file_name, item_index, bk_images, rando
     matrix = [[1 for col in range(len(item_index[row]))] for row in range(len(item_index))]
     item_index = [[c + d for c, d in zip(a,b)] for a, b in zip(item_index, matrix)]
     item_images = allItemLoad(item_index)
-    new_images = {'id': file_name + 2,
+    new_images = {'id': file_name + 1,
                                 'dataset_id': 1,
-                                'path': save_path + '/' + str(file_name + 1) + '.png',
-                                'file_name': str(file_name + 1) + '.png',
+                                'path': save_path + '/' + str(file_name +1) + '.png',
+                                'file_name': str(file_name +1) + '.png',
                                 'width': bk_images[0].shape[1],
                                 'height': bk_images[0].shape[0]}
     save_json['images'].append(new_images)
@@ -103,10 +105,10 @@ def jsonAppend(original_json, save_json, file_name, item_index, bk_images, rando
 
             annotations_len = len(save_json['annotations'])
             new_annotations = {'id': annotations_len, # 0부터 증가
-                                'image_id': file_name + 2, 
-                                'category_id': category + 1,
-                                # x, y, width, height
-                                'bbox': [xy[1]-item_image.shape[1], xy[0]-item_image.shape[0], item_image.shape[1], item_image.shape[0]],
+                                'image_id': file_name + 1, 
+                                'category_id': category,
+                                # x, y, x1, y1
+                                'bbox': [xy[1]-item_image.shape[1], xy[0]-item_image.shape[0], xy[1], xy[0]],
                                 'segmentation': [[new_seg]],
                                 # height * width
                                 'area': (xy[1]-item_image.shape[1])*(xy[0]-item_image.shape[0])*(item_image.shape[0])*(item_image.shape[1]),
@@ -159,8 +161,8 @@ def itemIndexRandom(item_used, all_item_used):
     while (listLen(item_index) == 0):
         # 카테고리 for문
         for i in range (0, len(item_index)):
-            # use image cnt
-            item_use_cnt = random.randint(0, 2)
+            # use image cnt(0개에서 2개)-> 카테고리 당 3개에서 5개(최소 총 한 백그라운드에 합성되는 이미지가 12개에서 20개)
+            item_use_cnt = random.randint(3, 5)
             # (확인용) 이미지 카테고리당 사용한 횟수 계산
             all_item_used[i] += item_use_cnt
 
@@ -240,22 +242,22 @@ def manipulation(bk_images, item_index):
 def main():
     # save할 json
     save_json = {'images':[], 'annotations':[], 'categories':
-                                                        [{'id': 1,
+                                                        [{'id': 0,
                                                         'name': 'knife',
                                                         'supercategory': 'item',
                                                         'color': '040439',
                                                         'metadata': ''},
-                                                        {'id': 2,
+                                                        {'id': 1,
                                                         'name': 'gun',
                                                         'supercategory': 'item',
                                                         'color': '040439',
                                                         'metadata': ''},
-                                                        {'id': 3,
+                                                        {'id': 2,
                                                         'name': 'bettery',
                                                         'supercategory': 'item',
                                                         'color': '040439',
                                                         'metadata': ''},
-                                                        {'id': 4,
+                                                        {'id': 3,
                                                         'name': 'laserpointer',
                                                         'supercategory': 'item',
                                                         'color': '040439',
