@@ -1,11 +1,10 @@
 import json
 import os
 import cv2
-import numpy as np
 import random
 import natsort
-import time
-import math
+from jitter.jitter import jitter
+from groundtruths import groundtruths
 
 # json load
 def jsonLoad():
@@ -22,15 +21,16 @@ def jsonLoad():
     return json_data
 
 # json dump
-def jsonDump(json_data):
-    json_path = "D:/wp/data/background_manipulation/manipulation/manipulation_image/json/data.json"
+def jsonDump(json_data, set):
+    json_path = f"D:/wp/data/manipulation_jitter_image/{set}/json/data.json"
 
     with open(json_path, 'w') as json_file:
         json_data = json.dump(json_data, json_file)
 
 # json append
-def jsonAppend(original_json, save_json, file_name, item_index, bk_images, random_max):
-    save_path = "D:/wp/data/background_manipulation/manipulation/manipulation_image/image"
+def jsonAppend(original_json, save_json, file_name, item_index, bk_images, random_max, set):
+    # jitter 경로로 저장
+    save_path = f"D:/wp/data/manipulation_jitter_image/{set}/jitter_image"
     # high
     item_images = allItemLoad(item_index)
     new_images = {'id': file_name,
@@ -134,8 +134,8 @@ def pngLoad(file_path):
     return file
 
 # image imwrite
-def pngSave(file_name, bk_images):
-    file_path = "D:/wp/data/background_manipulation/manipulation/manipulation_image/image"
+def pngSave(file_name, bk_images, set):
+    file_path = f"D:/wp/data/manipulation_jitter_image/{set}/image"
     cv2.imwrite(f"{file_path}/{file_name}.png", bk_images[0])
     cv2.imwrite(f"{file_path}/{file_name+1}.png", bk_images[1])
 
@@ -154,7 +154,7 @@ def allItemLoad(item_index):
     return item_images
 
 # 이미지 index 랜덤 추출
-def itemIndexRandom(item_used, all_item_used):
+def itemIndexRandom(item_used):
     item_index = [[],[],[],[]]
 
     # 모든 이미지가 0개가 아닐 때까지 추출
@@ -163,9 +163,6 @@ def itemIndexRandom(item_used, all_item_used):
         for i in range (0, len(item_index)):
             # use image cnt(0개에서 2개)-> 카테고리 당 3개에서 5개(최소 총 한 백그라운드에 합성되는 이미지가 12개에서 20개)
             item_use_cnt = random.randint(3, 5)
-            # (확인용) 이미지 카테고리당 사용한 횟수 계산
-            all_item_used[i] += item_use_cnt
-
             # 카테고리당 item_use_cnt만큼 뽑기
             for _ in range(0, item_use_cnt):
                 index = random.randrange(0, 9999, 2)
@@ -240,87 +237,79 @@ def manipulation(bk_images, item_index):
     return bk_images, random_max
 
 def main():
-    # save할 json
-    save_json = {'images':[], 'annotations':[], 'categories':
-                                                        [{'id': 0,
-                                                        'name': 'knife',
-                                                        'supercategory': 'item',
-                                                        'color': '040439',
-                                                        'metadata': ''},
-                                                        {'id': 1,
-                                                        'name': 'gun',
-                                                        'supercategory': 'item',
-                                                        'color': '040439',
-                                                        'metadata': ''},
-                                                        {'id': 2,
-                                                        'name': 'bettery',
-                                                        'supercategory': 'item',
-                                                        'color': '040439',
-                                                        'metadata': ''},
-                                                        {'id': 3,
-                                                        'name': 'laserpointer',
-                                                        'supercategory': 'item',
-                                                        'color': '040439',
-                                                        'metadata': ''}]   }
-    # category json
-    original_json = jsonLoad()
-
+    # train, val test set
+    setting = {"train":15999, "val":1999, "test":1999}
     # path
     background_path = "D:/wp/data/background_manipulation/manipulation/background_image"
-
-    # image file name load
-    background_file = folderImgNameLoad(background_path)
-        
-    # 사용한 이미지 저장 리스트
     item_used = [[],[],[],[]]
 
-    # (확인용) 이미지 카테고리당 사용한 횟수 계산
-    all_item_used = [0 for i in range(4)]
+    # category json
+    original_json = jsonLoad()
+    # image file name load
+    background_file = folderImgNameLoad(background_path)
 
-    # image name
-    file_name = 0
-    while (file_name <= 19999):
-        print(file_name)
-        # print(listLen(item_used))
-        print(len(item_used[0]), len(item_used[1]),len(item_used[2]),len(item_used[3]))
-        # print(all_item_used)
+    for set in setting:
+        print(set)
+        # save할 json
+        save_json = {'images':[], 'annotations':[], 'categories':
+                                                            [{'id': 0,
+                                                            'name': 'knife',
+                                                            'supercategory': 'item',
+                                                            'color': '040439',
+                                                            'metadata': ''},
+                                                            {'id': 1,
+                                                            'name': 'gun',
+                                                            'supercategory': 'item',
+                                                            'color': '040439',
+                                                            'metadata': ''},
+                                                            {'id': 2,
+                                                            'name': 'bettery',
+                                                            'supercategory': 'item',
+                                                            'color': '040439',
+                                                            'metadata': ''},
+                                                            {'id': 3,
+                                                            'name': 'laserpointer',
+                                                            'supercategory': 'item',
+                                                            'color': '040439',
+                                                            'metadata': ''}]   }
+        file_name = 0
+        while (file_name <= setting[set]):
+            # background index
+            bk_random_index = random.randrange(0, 8, 2)
+            # background image list
+            bk_images = []
+            
+            # background
+            bk_images.append(pngLoad(f"{background_path}/{background_file[bk_random_index]}"))
+            bk_images.append(pngLoad(f"{background_path}/{background_file[bk_random_index+1]}"))
 
+            # itemImage
+            item_index, item_used = itemIndexRandom(item_used)
 
-        # background index
-        bk_random_index = random.randrange(0, 8, 2)
-        # background image list
-        bk_images = []
-        
-        # background
-        bk_images.append(pngLoad(f"{background_path}/{background_file[bk_random_index]}"))
-        bk_images.append(pngLoad(f"{background_path}/{background_file[bk_random_index+1]}"))
+            # image manipulation
+            bk_images, random_max = manipulation(bk_images, item_index)
+            
+            # file save
+            pngSave(file_name, bk_images, set)
 
-        # itemImage
-        item_index, item_used = itemIndexRandom(item_used, all_item_used)
+            # json append
+            save_json = jsonAppend(original_json, save_json, file_name, item_index, bk_images, random_max, set)
 
-        # item 이미지 확인
-        # for i in range(len(item_image)):
-        #     for j in range(len(item_image[i])):
-        #         print(item_image[i][j])
-        #         cv2.imshow("image", item_image[i][j])
-        #         cv2.waitKey(0)
+            # json dump
+            # jsonDump(save_json)
 
-        # image manipulation
-        bk_images, random_max = manipulation(bk_images, item_index)
-        
-        # file save
-        pngSave(file_name, bk_images)
-
-        # json append
-        save_json = jsonAppend(original_json, save_json, file_name, item_index, bk_images, random_max)
+            file_name += 2
+            print(file_name)
+            # print(len(item_used[0]), len(item_used[1]),len(item_used[2]),len(item_used[3]))
 
         # json dump
-        # jsonDump(save_json)
-
-        file_name += 2
-
-    # json dump
-    jsonDump(save_json)
+        jsonDump(save_json, set)
+        print("jitter start")
+        jitter.run(set)
+        print("groundtruths start")
+        ground = groundtruths(set)
+        ground.groundTruths()
+        save_json.clear()
 
 if __name__ == "__main__":
     main()
