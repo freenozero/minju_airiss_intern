@@ -2,8 +2,11 @@ from library.utils.header import *
 from library.utils.io import *
 
 from library.utils.log import logger
+from library.utils.view import *
 
 from library.config import train_configs as tr_cfg
+from library.config import predict_configs as pr_cfg
+
 
 from library.dataset.dataset import COCODataset
 
@@ -167,18 +170,177 @@ class Train:
         for epoch in range(self.epochs):
             train_one_epoch(mdl, optm, train_dl, self.device, epoch, print_freq=10)
             lr_sch.step()
-        #     evaluate(mdl, val_dl, device=self.device)
+            evaluate(mdl, val_dl, device=self.device)
 
-        #     save_torch = {
-        #         "epoch":epoch,
-        #         "categories":categories["categories"],
-        #         "weight":mdl.state_dict(),
-        #         "optimizer":optm.state_dict(),
-        #         "lr_scheduler":lr_sch.state_dict()
-        #     }
+            save_torch = {
+                "epoch":epoch,
+                "categories":categories["categories"],
+                "weight":mdl.state_dict(),
+                "optimizer":optm.state_dict(),
+                "lr_scheduler":lr_sch.state_dict()
+            }
             
-        #     torch.save(save_torch, f"{self.save_model_path}/epoch_{epoch}.pth" )
-        #     torch.save(save_torch, f"{self.save_model_path}/lastest.pth" )
+            torch.save(save_torch, f"{self.save_model_path}/epoch_{epoch}.pth" )
+            torch.save(save_torch, f"{self.save_model_path}/lastest.pth" )
+        
+        logger.info("Train End")
 
+class Predict:
+    def __init__(self):
+        self.device = self._device()
+        
+        self.load_predict_image_path = pr_cfg["dirs"]["load_predict_image_path"]
+        self.load_predict_image_file_list = os.listdir(pr_cfg["dirs"]["load_predict_image_path"])
+        self.save_predict_image_path = pr_cfg["dirs"]["save_predict_image_path"]
+        
+        #self.categories = self._load_categories(pr_cfg["files"]["load_categories_path"])
+        self.categories = {}
+        self.model = self._load_model(pr_cfg["files"]["load_model_path"])
+        
+        self.min_score = pr_cfg["model"]["min_score"]
+        self.view = View()
+    
+    def _init_json_data(self):
+        return {
+            "boxes":[],
+            "masks":[],
+            "scores":[],
+            "labels":[]
+        }
+    
+    def _device(self):
+        return torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        
+    def _load_categories(self, full):
+        path, name = split_path_name(full)
+        return load_json(path, name)["categories"]
+    
+    def _load_model(self, full):    
+        checkpoint = torch.load(full)
+        self.categories = checkpoint["categories"]
+        model = Model()
+        num_classes = 1 + len(self.categories)
+        
+        mdl = model.build(num_classes)
+        mdl.load_state_dict(checkpoint["weight"])
+        mdl.to(self.device)
+        mdl.eval()
 
-logger.info("Train End")
+        return mdl
+    
+    def _gpu_to_cpu_numpy(self, obj, key, idx):
+        #return obj[key][idx].cpu().numpy()
+        return np.round(obj[key][idx].cpu().numpy()).astype(np.uint8) if key == "masks" else obj[key][idx].cpu().numpy()
+            
+    def _predict_to_dataset(self, file_name, image_data, json_data):
+        image_id = 0
+        height, width = image_data.shape[:2]
+        
+        images = self._convert_predict_to_images(
+            image_id=image_id, 
+            path=self.save_predict_image_path, 
+            file_name=file_name, 
+            width=width, 
+            height=height
+        )
+        
+        annotations = self._convert_predict_to_annotations(
+            image_id, 
+            json_data
+        )
+        
+        coco_json = {
+            "images":images,
+            "categories":self.categories,
+            "annotations":annotations
+        }
+        
+        return coco_json
+        
+    def _convert_predict_to_images(self, image_id, path, file_name, width, height):
+        return [{
+            "id": image_id,
+            "dataset_id":0,
+            "path":f"{path}/{file_name}",
+            "file_name": f"{file_name}",
+            "width":width,
+            "height":height
+        }]
+
+    def _convert_box_to_bbox(self, box):
+        box = np.around(box, 1)
+        return [ int(box[0]), int(box[1]), int(box[2]-box[0]), int(box[3]-box[1])]
+    
+    def _convert_mask_to_segmentation(self, mask):
+        mask = np.round(mask)
+        contours, _ = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_TC89_L1)
+        #contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        #contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        
+        segmentation = [ contour.flatten().tolist() for contour in contours if contour.size >= 6]
+        area = int(np.sum(mask))
+        
+        return segmentation, area
+    
+    def _convert_mask_to_encode(self,mask):
+        encode = maskUtils.encode(np.asfortranarray(mask))
+        return encode
+    
+    def _convert_predict_to_annotations(self, image_id, json_data):
+        masks = json_data["masks"]
+        scores = json_data["scores"]
+        boxes = json_data["boxes"]
+        labels = json_data["labels"]
+        
+        annotations = []
+        for idx, (mask, score, box, label) in enumerate(zip(masks, scores, boxes, labels)):
+            bbox = self._convert_box_to_bbox(box)
+            segmentation, area = self._convert_mask_to_segmentation(mask[0,:,:])
+            
+            annotations.append({
+                "id":idx,
+                "image_id":image_id,
+                "category_id":int(label),
+                "bbox":bbox,
+                "score":score.tolist(),
+                "segmentation":segmentation,
+                "area":area,
+                "iscrowd":False,
+            })
+
+        return annotations
+        
+    def start(self):
+        to_tensor = ToTensor()
+        
+        for _, predict_image_file in enumerate(self.load_predict_image_file_list):
+            #
+            load_path = self.load_predict_image_path
+            load_file_name = predict_image_file
+            
+            save_path = self.save_predict_image_path
+            save_json_file_name = f"{split_extension_file_name(predict_image_file)}.json"
+            
+            #
+            image_data = cv_load_image(load_path, load_file_name, cv2.IMREAD_COLOR)
+            image_tensor = to_tensor(image_data)
+            
+            with torch.no_grad():
+                predictions = self.model([image_tensor.to(self.device)])[0]
+            
+            json_data = self._init_json_data()
+            
+            for idx, score in enumerate(predictions["scores"]):
+                if float(score) > self.min_score:
+                    for key in predictions.keys():
+                        json_data[key].append(self._gpu_to_cpu_numpy(predictions, key, idx))
+        
+            coco_data = self._predict_to_dataset(
+                file_name=predict_image_file, 
+                image_data=image_data,
+                json_data=json_data
+            )
+            
+            save_json(coco_data, save_path, save_json_file_name)
+            self.view.visualize(save_path, load_file_name, image_data, coco_data)
+            
