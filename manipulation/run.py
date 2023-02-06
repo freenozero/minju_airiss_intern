@@ -6,7 +6,7 @@ from library.groundtruths import groundtruths
 
 
 if __name__ == "__main__":
-    # train, val, test setting
+    # # train, val, test setting
     setting = {"train":15999, "val":1999, "test":1999}
     
     highlow_setting = ["highlow", "high", "low"]
@@ -32,9 +32,9 @@ if __name__ == "__main__":
     highlow_split = split(path)
     highlow_split.run()
 
-    # highlow, high, low 폴더에 있는 jitter image들을 groundtruth하기
+    # (highlow), high, low 폴더에 있는 (train), val, test jitter image들을 groundtruth하기
     print("start groundtruths")
-    for highlow in highlow_setting:
-        for dataset in dataset_setting:
+    for highlow in highlow_setting[1:]:
+        for dataset in dataset_setting[1:]:
             ground = groundtruths(f"{path}/{highlow}/{dataset}/jitter_image", f"{path}/{highlow}/{dataset}/json/data.json", f"{path}/{highlow}/{dataset}/ground_truths")
             ground.run()

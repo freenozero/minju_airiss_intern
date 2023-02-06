@@ -130,7 +130,7 @@ class View:
                 segmentation = annotation["segmentation"]
                 bbox = annotation["bbox"]
                 label = categories[annotation["category_id"]-1]["name"]
-                color = self._hex_to_rgb(categories[annotation["category_id"]]["color"])
+                color = self._hex_to_rgb(categories[annotation["category_id"]-1]["color"])
                 score = annotation['score']
                 
                 #grid segmentation

@@ -37,11 +37,11 @@ class groundtruths:
             bbox = annotation['bbox']
 
             # seg 칠하기
-            cv2.fillPoly(ground_truths_img, [seg], category_color[category_id])
+            cv2.fillPoly(ground_truths_img, [seg], category_color[category_id-1])
 
             # bbox 그리기
             cv2.rectangle(ground_truths_img, (bbox[0], bbox[1]),
-                      (bbox[2]+bbox[0], bbox[3]+bbox[1]), category_color[category_id], 3)
+                      (bbox[2]+bbox[0], bbox[3]+bbox[1]), category_color[category_id-1], 3)
 
             # original_img랑 filter_img 합성하기
             add_img = cv2.addWeighted(original_img, 0.7, ground_truths_img, 0.3, 3)

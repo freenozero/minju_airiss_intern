@@ -40,7 +40,7 @@ def jsonAppend(original_json, save_json, file_name, bk_images, random_max,  high
                     annotations_len = len(save_json['annotations'])
                     new_annotations = {'id': annotations_len, # 0부터 증가
                                         'image_id': file_name,
-                                        'category_id': category,
+                                        'category_id': category+1,
                                         # x, y, width, height
                                         # bk_image[random_max[j][z][0]-item_height:random_max[j][z][0], random_max[j][z][1]-item_width:random_max[j][z][1]] *= item_image
                                         # xy[0]: max_height
@@ -83,7 +83,7 @@ def jsonAppend(original_json, save_json, file_name, bk_images, random_max,  high
                     annotations_len = len(save_json['annotations'])
                     new_annotations = {'id': annotations_len, # 0부터 증가
                                         'image_id': file_name + 1,
-                                        'category_id': category,
+                                        'category_id': category+1,
                                         # x, y, width, height
                                         # bk_image[random_max[j][z][0]-item_height:random_max[j][z][0], random_max[j][z][1]-item_width:random_max[j][z][1]] *= item_image
                                         # xy[0]: max_height

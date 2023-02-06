@@ -8,8 +8,8 @@ dirs = {
 }
 
 files = {
-    "load_model_path" : f"{absolute_path}/model/load/lastest.pth",
-    "load_categories_path" : f"{absolute_path}/model/load/categories.json"
+    "load_model_path" : f"{absolute_path}/model/save/lastest.pth",
+    "load_categories_path" : f"{absolute_path}/model/save/categories.json"
 }
 
 model = {
