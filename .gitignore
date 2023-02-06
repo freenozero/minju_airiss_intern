@@ -129,7 +129,9 @@ dmypy.json
 .pyre/
 
 # hide code
+mask_rcnn
 COMMON_AI-main
+
 
 # hide image
 PennFudanPed
