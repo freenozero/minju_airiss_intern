@@ -30,9 +30,8 @@ class COCODataset(torch.utils.data.Dataset):
         for ann in annotations:
             target["labels"].append(ann["category_id"])
             target["boxes"].append(self._bbox_to_point(ann["bbox"]))
-            ann2 = copy.deepcopy(ann)
-            ann2["segmentation"] = ann2["segmentation"][0]
-            target["masks"].append(self.coco.annToMask(ann2))
+            target["masks"].append(self.coco.annToMask(ann))
+            # input type error: coco.annTomask(line 423): segm = ann['segmentation'] -> segm = ann['segmentation'][0]
 
             target["area"].append(ann["area"])
             target["iscrowd"].append(ann["iscrowd"])

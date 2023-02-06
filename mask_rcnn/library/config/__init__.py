@@ -24,5 +24,6 @@ def config_set(config_full_path):
     return configs
 
 train_configs = config_set("./mask_rcnn/library/config/train_config.py")
-predict_configs = config_set("./mask_rcnn/library/config/predict_config.py")
-view_configs = config_set("./library/ai/MaskRCNN/config/view_config.py")
+print(train_configs)
+# predict_configs = config_set("./library/ai/MaskRCNN/config/predict_config.py")
+# view_configs = config_set("./library/ai/MaskRCNN/config/view_config.py")
