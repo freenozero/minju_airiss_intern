@@ -1,0 +1,11 @@
+- feat: 기능구현
+- refactor: 코드 리팩토링
+- test: 테스트 추가, 테스트 리팩토링
+- docs: 문서 수정 ex)README.md
+- style: 코드포맷, 세미콜론 누락 등 코드 수정이 없는 경우
+- fix: 버그 고침
+- !BREAKING CHANGE: API 변경 ex)API의 매개변수, 반환값 변경
+- rename: 파일, 패키지명 수정
+- remove: 파일 삭제
+- comment: 주석 관련
+- chore: 그 외 자잘한 수정
