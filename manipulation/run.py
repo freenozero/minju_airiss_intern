@@ -7,10 +7,11 @@ from library.groundtruths import groundtruths
 
 if __name__ == "__main__":
     # # train, val, test setting
-    setting = {"train":15999, "val":1999, "test":1999}
+    # setting = {"train":15999, "val":1999, "test":1999}
+    setting = {"train":17999, "val":1999}
     
     highlow_setting = ["highlow", "high", "low"]
-    dataset_setting = ["train", "val", "test"]
+    dataset_setting = ["train", "val"]
     
     path = "D:/wp/data/manipulation_image"
     

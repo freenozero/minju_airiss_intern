@@ -5,7 +5,8 @@ from library.utils.algorithm import algorithm
 class split:
     '''highlow 데이터를 high, low로 split'''
     def __init__(self, path):
-        self.dataset_setting = ["train", "val", "test"]
+        # self.dataset_setting = ["train", "val", "test"]
+        self.dataset_setting = ["train", "val"]
         self.highlow_path=f'{path}/highlow'
         self.high_path =f'{path}/high'
         self.low_path = f'{path}/low'

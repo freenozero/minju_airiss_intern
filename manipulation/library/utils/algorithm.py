@@ -4,9 +4,9 @@ from library.utils.io import io
 class algorithm:
     def segTo2D(annotation):
         seg = []
-        for index, x in enumerate(annotation['segmentation'][0][0]):
+        for index, x in enumerate(annotation['segmentation'][0]):
             if((index % 2) == 0):
-                seg.append([x, annotation['segmentation'][0][0][index+1]])
+                seg.append([x, annotation['segmentation'][0][index+1]])
         return(np.array(seg, np.int32))
 
     def delExtension(file_name, ext):

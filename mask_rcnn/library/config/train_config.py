@@ -29,7 +29,7 @@ dataloader = {
 }
 
 model = {
-    "epochs": 40,
+    "epochs": 1,
     "detection":{
         "hidden_layer": 256,
         "pretrained": True

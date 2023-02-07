@@ -48,7 +48,7 @@ def jsonAppend(original_json, save_json, file_name, bk_images, random_max,  high
                                         # item_image.shape[0]: height
                                         # item_image.shape[1]: width
                                         'bbox': [xy[1]-item_image.shape[1], xy[0]-item_image.shape[0], item_image.shape[1], item_image.shape[0]],
-                                        'segmentation': [[new_seg]],
+                                        'segmentation': [new_seg],
                                         # height * width
                                         'area': (xy[1]-item_image.shape[1])*(xy[0]-item_image.shape[0])*(item_image.shape[0])*(item_image.shape[1]),
                                         'iscrowd': False,
@@ -91,7 +91,7 @@ def jsonAppend(original_json, save_json, file_name, bk_images, random_max,  high
                                         # item_image.shape[0]: height
                                         # item_image.shape[1]: width
                                         'bbox': [xy[1]-item_image.shape[1], xy[0]-item_image.shape[0], item_image.shape[1], item_image.shape[0]],
-                                        'segmentation': [[new_seg]],
+                                        'segmentation': [new_seg],
                                         # height * width
                                         'area': (xy[1]-item_image.shape[1])*(xy[0]-item_image.shape[0])*(item_image.shape[0])*(item_image.shape[1]),
                                         'iscrowd': False,
@@ -189,7 +189,7 @@ def manipulation(bk_images, high_item, low_item):
 
 def run(setting):
     # path
-    background_path = "D:/wp/data/background_image"
+    background_path = "D:/wp/data/background_image/resize"
     save_path = "D:/wp/data/manipulation_image/highlow"
 
     item_used = [0 for i in range(4)]
