@@ -6,3 +6,4 @@ import natsort
 import torchvision
 from PIL import Image
 import numpy as np
+from time import sleep

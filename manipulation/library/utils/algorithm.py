@@ -43,32 +43,38 @@ class algorithm:
                                 ㄴ data.json  
                     ㄴ high
                         ㄴ train
+                            ㄴ image
                             ㄴ jitter_image
                             ㄴ ground_truth
                             ㄴ json       
                                 ㄴ data.json
                         ㄴ val
+                            ㄴ image
                             ㄴ jitter_image
                             ㄴ ground_truth
                             ㄴ json       
                                 ㄴ data.json
                         ㄴ test
+                            ㄴ image
                             ㄴ jitter_image
                             ㄴ ground_truth
                             ㄴ json       
                                 ㄴ data.json
                     ㄴ low
                         ㄴ train
+                            ㄴ image
                             ㄴ jitter_image
                             ㄴ ground_truth
                             ㄴ json       
                                 ㄴ data.json
                         ㄴ val
+                            ㄴ image
                             ㄴ jitter_image
                             ㄴ ground_truth
                             ㄴ json      
                                 ㄴ data.json 
                         ㄴ test
+                            ㄴ image
                             ㄴ jitter_image
                             ㄴ ground_truth
                             ㄴ json      
@@ -78,10 +84,8 @@ class algorithm:
         for highlow in highlow_setting:
             for dataset in dataset_setting:
                 for folder_name in folder_setting:
-                    # higlow 폴더에만 imag 폴더 생성하기 위함
-                    if not (highlow != "highlow" and folder_name == "image"):
-                        mk_folder_path = f"{path}/{highlow}/{dataset}/{folder_name}"
-                        algorithm.mkFolder(mk_folder_path)
+                    mk_folder_path = f"{path}/{highlow}/{dataset}/{folder_name}"
+                    algorithm.mkFolder(mk_folder_path)
 
                     if folder_name == "json":
                         algorithm.mkJsonFile(f"{path}/{highlow}/{dataset}/{folder_name}/data.json")
