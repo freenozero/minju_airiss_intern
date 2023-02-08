@@ -46,11 +46,16 @@ save_json_data = {'images':[], 'annotations':[], 'categories':
 save_json_data["images"] = json_data["images"]
 
 categories = json_data["categories"]
+original_categories = {}
+for cate in categories:
+    original_categories.update({cate["name"]: cate["id"]})
+
 change_categories = {"knife":1, "gun":2, "gasgun":2, "battery":3, "laserpointer":4}
 
 for ann in json_data["annotations"]:
-    for categories in change_categories:
-        if change_categories[categories] == ann["category_id"]:
-            ann["category_id"] = change_categories[categories]
+    for change_cate in change_categories:
+        if ((list(original_categories.keys())[ann["category_id"]-1]) == change_cate):
+            ann["category_id"] = change_categories[change_cate]
             save_json_data["annotations"].append(ann)
+            break
 io.json_io.jsonSave(save_json_data, f"{json_path}/change.json")
