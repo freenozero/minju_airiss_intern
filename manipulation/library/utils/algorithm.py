@@ -108,7 +108,7 @@ class algorithm:
                                                             'color': '040439',
                                                             'metadata': ''},
                                                             {'id': 3,
-                                                            'name': 'bettery',
+                                                            'name': 'battery',
                                                             'supercategory': 'item',
                                                             'color': '040439',
                                                             'metadata': ''},
