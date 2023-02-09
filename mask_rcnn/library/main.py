@@ -193,8 +193,9 @@ class Predict:
         self.load_predict_image_file_list = os.listdir(pr_cfg["dirs"]["load_predict_image_path"])
         self.save_predict_image_path = pr_cfg["dirs"]["save_predict_image_path"]
         
-        #self.categories = self._load_categories(pr_cfg["files"]["load_categories_path"])
-        self.categories = {}
+        self.categories = self._load_categories(pr_cfg["files"]["load_categories_path"])
+        self.actual_json = self._load_actual(pr_cfg["files"]["load_actural_json_path"])
+        
         self.model = self._load_model(pr_cfg["files"]["load_model_path"])
         
         self.min_score = pr_cfg["model"]["min_score"]
@@ -215,6 +216,10 @@ class Predict:
         path, name = split_path_name(full)
         return load_json(path, name)["categories"]
     
+    def _load_actual(self, full):
+        path, name = split_path_name(full)
+        return load_json(path, name)
+
     def _load_model(self, full):    
         checkpoint = torch.load(full)
         self.categories = checkpoint["categories"]
@@ -309,12 +314,25 @@ class Predict:
             })
 
         return annotations
-        
+    
+    def _make_actual_matrix(self, predict_image_file, actual_matrix):
+        for ann in self.actual_json["annotations"]:
+            if ann["image_id"] == predict_image_file:
+                actual_matrix[ann["category_id"]-1] += 1
+            else:
+                actual_matrix
+
+        return actual_matrix
+    
     def start(self):
         to_tensor = ToTensor()
-        
-        for _, predict_image_file in enumerate(self.load_predict_image_file_list):
+        prediction_matrix = [0 for i in range(4)]
+        actual_matrix = [0 for i in range(4)]
+        for _, predict_image_file in enumerate(self.load_predict_image_file_list):          
+
+            actual_matrix = self._make_actual_matrix(int(predict_image_file.rstrip('.png')), actual_matrix)
             #
+
             load_path = self.load_predict_image_path
             load_file_name = predict_image_file
             
@@ -331,16 +349,20 @@ class Predict:
             json_data = self._init_json_data()
             
             for idx, score in enumerate(predictions["scores"]):
+                # score 0.5 추출
                 if float(score) > self.min_score:
+                    prediction_matrix[predictions["labels"][idx]-1] += 1
                     for key in predictions.keys():
                         json_data[key].append(self._gpu_to_cpu_numpy(predictions, key, idx))
-        
+
+
+            print(f"prediction_matrix:{prediction_matrix}")
+            print(f"actual_matrix:{actual_matrix}")
+
             coco_data = self._predict_to_dataset(
                 file_name=predict_image_file, 
                 image_data=image_data,
                 json_data=json_data
             )
-            
             save_json(coco_data, save_path, save_json_file_name)
             self.view.visualize(save_path, load_file_name, image_data, coco_data)
-            

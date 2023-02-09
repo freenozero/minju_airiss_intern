@@ -147,7 +147,7 @@ class CocoEvaluator:
             labels = prediction["labels"]
             masks = prediction["masks"]
 
-            masks = masks > 0.5
+            masks = masks >= 0.5
 
             scores = prediction["scores"].tolist()
             labels = prediction["labels"].tolist()

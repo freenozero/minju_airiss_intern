@@ -1,6 +1,7 @@
-absolute_path = "D:/wp/data/manipulation_image/high"
+name = f"highlow"
 
-name = f"high"
+absolute_path = f"D:/wp/data/manipulation_image(8,2)/{name}"
+
 dirs = {
     'train_image_path': f"{absolute_path}/train/jitter_image",
     'val_image_path': f"{absolute_path}/val/jitter_image",
@@ -16,7 +17,7 @@ files = {
 
 dataloader = {
     "train" : {
-        "batch_size":4,
+        "batch_size": 4,
         "shuffle":True,
         "num_workers":0,
     },
@@ -29,7 +30,7 @@ dataloader = {
 }
 
 model = {
-    "epochs": 1,
+    "epochs": 50,
     "detection":{
         "hidden_layer": 256,
         "pretrained": True

@@ -12,6 +12,7 @@ from PIL import ImageFont, ImageDraw, Image
 
 import torch
 import torchvision
+from torchmetrics.classification import MulticlassRecall
 
 
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
@@ -28,3 +29,5 @@ import library.vision.references.detection.transforms as T
 
 from pycocotools.coco import COCO
 from pycocotools import mask as maskUtils
+
+from time import sleep

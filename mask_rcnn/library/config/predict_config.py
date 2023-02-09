@@ -1,18 +1,19 @@
-absolute_path = "D:/wp/data/manipulation_image/high"
+name = f"highlow"
 
-name = f"high"
+model_path = f"D:/wp/data/manipulation_image(9,1)/{name}"
+test_path = "D:/wp/data/test_image/High_energy_image_size(700x700)_16bit"
 
 dirs = {
-    "load_predict_image_path": f"{absolute_path}/test/jitter_image",
-    "save_predict_image_path": f"{absolute_path}/test/result"
+    "load_predict_image_path": f"{test_path}/image",
+    "save_predict_image_path": f"{test_path}/result"
 }
 
 files = {
-    "load_model_path" : f"{absolute_path}/model/save/lastest.pth",
-    "load_categories_path" : f"{absolute_path}/model/save/categories.json"
+    "load_actural_json_path" : f"{test_path}/json/change.json",
+    "load_model_path" : f"{model_path}/model/save/lastest.pth",
+    "load_categories_path" : f"{model_path}/model/save/categories.json"
 }
 
 model = {
-    "min_score" : 0.5
+    "min_score" : 0.999
 }
-

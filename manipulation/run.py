@@ -7,8 +7,11 @@ from library.groundtruths import groundtruths
 
 if __name__ == "__main__":
     # # train, val, test setting
-    # setting = {"train":15999, "val":1999, "test":1999}
-    setting = {"train":17999, "val":1999}
+    # setting = {"train":15999, "val":1999, "test":1999} # 8:1:1
+    # setting = {"train":17999, "val":1999} # 9:1
+    setting = {"train":15999, "val":3999} # 8:2
+
+    # setting = {"train":19, "val":19} # test
     
     highlow_setting = ["highlow", "high", "low"]
     dataset_setting = ["train", "val"]
