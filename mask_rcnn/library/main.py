@@ -329,7 +329,8 @@ class Predict:
         prediction_matrix = [0 for i in range(4)]
         actual_matrix = [0 for i in range(4)]
         for _, predict_image_file in enumerate(self.load_predict_image_file_list):          
-
+            
+            image_actual_matrix = [0 for i in range(4)]
             actual_matrix = self._make_actual_matrix(int(predict_image_file.rstrip('.png')), actual_matrix)
             #
 
@@ -366,3 +367,7 @@ class Predict:
             )
             save_json(coco_data, save_path, save_json_file_name)
             self.view.visualize(save_path, load_file_name, image_data, coco_data)
+
+        
+            # metric = MulticlassRecall(num_classes=4)
+            # print(metric(torch.tensor(prediction_matrix), torch.tensor(actual_matrix)))
