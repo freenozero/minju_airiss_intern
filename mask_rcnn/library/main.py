@@ -230,7 +230,6 @@ class Predict:
         mdl.load_state_dict(checkpoint["weight"])
         mdl.to(self.device)
         mdl.eval()
-
         return mdl
     
     def _gpu_to_cpu_numpy(self, obj, key, idx):
@@ -276,6 +275,10 @@ class Predict:
         box = np.around(box, 1)
         return [ int(box[0]), int(box[1]), int(box[2]-box[0]), int(box[3]-box[1])]
     
+    def _convert_box_to_mask(self, box):
+        box = np.around(box, 1)
+        return [ int(box[0]), int(box[1]), int(box[2]+box[0]), int(box[3]+box[1])]
+
     def _convert_mask_to_segmentation(self, mask):
         mask = np.round(mask)
         contours, _ = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_TC89_L1)
@@ -287,7 +290,7 @@ class Predict:
         
         return segmentation, area
     
-    def _convert_mask_to_encode(self,mask):
+    def _convert_mask_to_encode(self, mask):
         encode = maskUtils.encode(np.asfortranarray(mask))
         return encode
     
@@ -314,33 +317,106 @@ class Predict:
             })
 
         return annotations
-    
-    def _make_actual_matrix(self, predict_image_file, actual_matrix):
+
+    def _make_true_list(self, predict_image_file):
+        '''return true_list ([[category_id:bbox], ...])'''
+        true_list = []
         for ann in self.actual_json["annotations"]:
             if ann["image_id"] == predict_image_file:
-                actual_matrix[ann["category_id"]-1] += 1
-            else:
-                actual_matrix
-
-        return actual_matrix
+                true_list.append({ann["category_id"]: ann["bbox"]})
+        return true_list
     
+    def _confusion_matrix(self, pred_list, true_list):
+
+        result = [[0, 0, 0, 0] for x in range(4)] # [TP:0, FP:1, FN:2, TN:3]
+        # True Positive(TP) : 실제 True인 정답을 True라고 예측 (정답)
+        # False Positive(FP) : 실제 False인 정답을 True라고 예측 (오답)
+        # False Negative(FN) : 실제 True인 정답을 False라고 예측 (오답)
+        # True Negative(TN) : 실제 False인 정답을 False라고 예측 (정답)
+
+        true_list_copy = copy.deepcopy(true_list)
+        pred_list_copy = copy.deepcopy(pred_list)
+        for pred in pred_list:
+            pred_boxes = list(pred.values())[0]
+            pred_keys = list(pred.keys())[0]
+            for true in true_list:
+                true_boxes = self._convert_box_to_mask(list(true.values())[0])
+                true_keys = list(true.keys())[0]
+                iou = self._iou(pred_boxes, true_boxes)
+                # iou도 맞고 카테고리도 맞는 것
+                if(iou >= self.min_score and pred_keys == true_keys):
+                   
+                    if true in true_list_copy and pred in pred_list_copy:
+                        del true_list_copy[true_list_copy.index(true)]
+                        del pred_list_copy[pred_list_copy.index(pred)]
+                        result[pred_keys-1][0]+=1 # TP
+                        break
+                # iou는 맞지만 카테고리가 다른 것
+                elif(iou >= self.min_score and pred_keys != true_keys):
+                    
+                    if true in true_list_copy and pred in pred_list_copy:
+                        del true_list_copy[true_list_copy.index(true)]
+                        del pred_list_copy[pred_list_copy.index(pred)]
+                        result[pred_keys-1][1]+=1 # FP
+                        break
+
+        # 예측했지만 정답이 아닌 것들
+        for pred in pred_list_copy:
+            pred_keys = list(pred.keys())[0] # FP
+            result[pred_keys-1][1] += 1
+        
+        # 정답이지만 예측되지 않은 것들
+        for true in true_list_copy:
+            true_keys = list(true.keys())[0] # FN
+            result[true_keys-1][2] += 1
+        # print(result)
+        return result
+    
+    def _iou(self, pred_boxes, true_boxes):
+        box1_area = (pred_boxes[2] - pred_boxes[0] + 1) * (pred_boxes[3] - pred_boxes[1] + 1)
+        box2_area = (true_boxes[2] - true_boxes[0] + 1) * (true_boxes[3] - true_boxes[1] + 1)
+
+        x1 = max(pred_boxes[0], true_boxes[0])
+        y1 = max(pred_boxes[1], true_boxes[1])
+        x2 = min(pred_boxes[2], true_boxes[2])
+        y2 = min(pred_boxes[3], true_boxes[3])
+
+        w = max(0, x2 - x1 + 1)
+        h = max(0, y2 - y1 + 1)
+
+        inter = w * h
+
+        # x1, y1, x2, y2, w, h, inter = int(x1), int(y1), int(x2), int(y2), int(w), int(h), int(inter)
+
+        iou = inter / (box1_area + box2_area - inter)
+        return iou
+    
+    def _convert_precision(self, l):
+        '''[TP:0, FP:1, FN:2, TN:3]'''
+        return l[0]/(l[0]+l[1])
+
+    def _convert_recall(self, l):
+        '''[TP:0, FP:1, FN:2, TN:3]'''
+        return l[0]/(l[0]+l[2])
+
     def start(self):
         to_tensor = ToTensor()
-        prediction_matrix = [0 for i in range(4)]
-        actual_matrix = [0 for i in range(4)]
-        for _, predict_image_file in enumerate(self.load_predict_image_file_list):          
-            
-            image_actual_matrix = [0 for i in range(4)]
-            actual_matrix = self._make_actual_matrix(int(predict_image_file.rstrip('.png')), actual_matrix)
-            #
+        result = [[0, 0, 0, 0] for x in range(4)] # [TP:0, FN:1, FP:2, TN:3]
 
+        for _, predict_image_file in enumerate(self.load_predict_image_file_list):             
+            # this list is limited predict_image_file
+            pred_list = [] # [[category_id:bbox], ...]
+
+            true_list = self._make_true_list(int(predict_image_file.rstrip('.png')))
+
+            #
             load_path = self.load_predict_image_path
             load_file_name = predict_image_file
             
             save_path = self.save_predict_image_path
             save_json_file_name = f"{split_extension_file_name(predict_image_file)}.json"
-            
             #
+
             image_data = cv_load_image(load_path, load_file_name, cv2.IMREAD_COLOR)
             image_tensor = to_tensor(image_data)
             
@@ -348,26 +424,41 @@ class Predict:
                 predictions = self.model([image_tensor.to(self.device)])[0]
             
             json_data = self._init_json_data()
-            
             for idx, score in enumerate(predictions["scores"]):
-                # score 0.5 추출
                 if float(score) > self.min_score:
-                    prediction_matrix[predictions["labels"][idx]-1] += 1
+                    pred_list.append({int(predictions["labels"][idx]): predictions["boxes"][idx].tolist()})
                     for key in predictions.keys():
                         json_data[key].append(self._gpu_to_cpu_numpy(predictions, key, idx))
-
-
-            print(f"prediction_matrix:{prediction_matrix}")
-            print(f"actual_matrix:{actual_matrix}")
 
             coco_data = self._predict_to_dataset(
                 file_name=predict_image_file, 
                 image_data=image_data,
                 json_data=json_data
             )
-            save_json(coco_data, save_path, save_json_file_name)
-            self.view.visualize(save_path, load_file_name, image_data, coco_data)
 
+            save_json(coco_data, save_path, save_json_file_name)
+            result2 = self._confusion_matrix(pred_list, true_list)
+            result = np.array(result) + np.array(result2)
+            # print(f"knife precision: {self._convert_precision(result[0])}")
+            # print(f"gun precision: {self._convert_precision(result[1])}")
+            # print(f"battery precision: {self._convert_precision(result[2])}")
+            # print(f"laserpointer precision: {self._convert_precision(result[3])}")
+
+                    
+            # print(f"knife recall: {self._convert_recall(result[0])}")
+            # print(f"gun recall: {self._convert_recall(result[1])}")
+            # print(f"battery recall: {self._convert_recall(result[2])}")
+            # print(f"laserpointer recall: {self._convert_recall(result[3])}")
+                
+            self.view.visualize(save_path, load_file_name, image_data, coco_data)
         
-            # metric = MulticlassRecall(num_classes=4)
-            # print(metric(torch.tensor(prediction_matrix), torch.tensor(actual_matrix)))
+        print(f"knife precision: {self._convert_precision(result[0])}")
+        print(f"gun precision: {self._convert_precision(result[1])}")
+        print(f"battery precision: {self._convert_precision(result[2])}")
+        print(f"laserpointer precision: {self._convert_precision(result[3])}")
+
+                
+        print(f"knife recall: {self._convert_recall(result[0])}")
+        print(f"gun recall: {self._convert_recall(result[1])}")
+        print(f"battery recall: {self._convert_recall(result[2])}")
+        print(f"laserpointer recall: {self._convert_recall(result[3])}")
