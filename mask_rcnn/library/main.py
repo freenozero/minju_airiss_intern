@@ -185,6 +185,7 @@ class Train:
         
         logger.info("Train End")
 
+
 class Predict:
     def __init__(self):
         self.device = self._device()
@@ -197,7 +198,7 @@ class Predict:
         self.actual_json = self._load_actual(pr_cfg["files"]["load_actural_json_path"])
         
         self.model = self._load_model(pr_cfg["files"]["load_model_path"])
-        
+
         self.min_score = pr_cfg["model"]["min_score"]
         self.view = View()
     
@@ -326,53 +327,43 @@ class Predict:
                 true_list.append({ann["category_id"]: ann["bbox"]})
         return true_list
     
-    def _confusion_matrix(self, pred_list, true_list):
-
-        result = [[0, 0, 0, 0] for x in range(4)] # [TP:0, FP:1, FN:2, TN:3]
-        # True Positive(TP) : 실제 True인 정답을 True라고 예측 (정답)
-        # False Positive(FP) : 실제 False인 정답을 True라고 예측 (오답)
-        # False Negative(FN) : 실제 True인 정답을 False라고 예측 (오답)
-        # True Negative(TN) : 실제 False인 정답을 False라고 예측 (정답)
-
+    def _iou_confusion_matrix(self, predictions, true_list, result, fn_result):
+        '''카테고리 별로 iou_threshold에 대해 TP, FP, FN 계산 후 해당 detection confidiences와 함께 리턴'''
+        
         true_list_copy = copy.deepcopy(true_list)
-        pred_list_copy = copy.deepcopy(pred_list)
-        for pred in pred_list:
-            pred_boxes = list(pred.values())[0]
-            pred_keys = list(pred.keys())[0]
+
+        for idx, pred_boxes in enumerate(predictions["boxes"].tolist()):
+            pred_keys = predictions["labels"][idx] - 1
+            pred_score = predictions["scores"][idx]
+            fp_plus = True
             for true in true_list:
                 true_boxes = self._convert_box_to_mask(list(true.values())[0])
-                true_keys = list(true.keys())[0]
-                iou = self._iou(pred_boxes, true_boxes)
-                # iou도 맞고 카테고리도 맞는 것
-                if(iou >= self.min_score and pred_keys == true_keys):
-                   
-                    if true in true_list_copy and pred in pred_list_copy:
+                true_keys = list(true.keys())[0] - 1
+                if(self._iou(pred_boxes, true_boxes) and pred_keys == true_keys): #TP: iou가 iou_threshold 이상이고, 카테고리가 맞을 때
+                    result[pred_keys].append({'confidences':float(pred_score), 'type':'TP'})
+                    if true in true_list_copy:
                         del true_list_copy[true_list_copy.index(true)]
-                        del pred_list_copy[pred_list_copy.index(pred)]
-                        result[pred_keys-1][0]+=1 # TP
-                        break
-                # iou는 맞지만 카테고리가 다른 것
-                elif(iou >= self.min_score and pred_keys != true_keys):
-                    
-                    if true in true_list_copy and pred in pred_list_copy:
+                    fp_plus = False
+                    break
+                elif(self._iou(pred_boxes, true_boxes) and pred_keys != true_keys): # FP: iou가 iou_threshold 이상이고, 카테고리가 다를 때
+                    result[pred_keys].append({'confidences':float(pred_score), 'type':'FP'})
+                    if true in true_list_copy:
                         del true_list_copy[true_list_copy.index(true)]
-                        del pred_list_copy[pred_list_copy.index(pred)]
-                        result[pred_keys-1][1]+=1 # FP
-                        break
+                    fp_plus = False
+                    break
+            if(fp_plus): # FP: iou가 맞는 데이터를 찾지 못했을 때
+                result[pred_keys].append({'confidences':float(pred_score), 'type':'FP'})
 
-        # 예측했지만 정답이 아닌 것들
-        for pred in pred_list_copy:
-            pred_keys = list(pred.keys())[0] # FP
-            result[pred_keys-1][1] += 1
-        
-        # 정답이지만 예측되지 않은 것들
+        # FN: 검출되지 못했을 때(iou_threshold가 이하일 때)
         for true in true_list_copy:
-            true_keys = list(true.keys())[0] # FN
-            result[true_keys-1][2] += 1
-        # print(result)
-        return result
-    
-    def _iou(self, pred_boxes, true_boxes):
+            print(true)
+            for key, _ in true.items():
+                fn_result[key - 1] += 1
+
+        return result, fn_result
+
+    def _iou(self, pred_boxes, true_boxes, iou_threshold = 0.5):
+        '''iou_threshold(0.5)를 기준으로 True Or False 반환'''
         box1_area = (pred_boxes[2] - pred_boxes[0] + 1) * (pred_boxes[3] - pred_boxes[1] + 1)
         box2_area = (true_boxes[2] - true_boxes[0] + 1) * (true_boxes[3] - true_boxes[1] + 1)
 
@@ -386,26 +377,68 @@ class Predict:
 
         inter = w * h
 
-        # x1, y1, x2, y2, w, h, inter = int(x1), int(y1), int(x2), int(y2), int(w), int(h), int(inter)
-
         iou = inter / (box1_area + box2_area - inter)
-        return iou
+        
+        if(iou >= iou_threshold):
+            return True
+        else:
+            return False
     
-    def _convert_precision(self, l):
-        '''[TP:0, FP:1, FN:2, TN:3]'''
-        return l[0]/(l[0]+l[1])
+    def _precision(self, tp, fp):
+        return tp/(tp+fp)
 
-    def _convert_recall(self, l):
-        '''[TP:0, FP:1, FN:2, TN:3]'''
-        return l[0]/(l[0]+l[2])
+    def _recall(self, tp, fn):
+        return tp/(tp+fn)
+    
+    def _ap(self, result, fn_result):
+        result[0] = sorted(result[0], key= lambda x: x["confidences"], reverse=True)
+        result[1] = sorted(result[1], key= lambda x: x["confidences"], reverse=True)
+        result[2] = sorted(result[2], key= lambda x: x["confidences"], reverse=True)
+        result[3] = sorted(result[3], key= lambda x: x["confidences"], reverse=True)
 
+        cate_ap = []
+        for idx, re in enumerate(result):
+            cate_ap.append(self._cate_ap(re, fn_result[idx]))
+        return cate_ap
+    
+    def _cate_ap(self, re, fn):
+        acc_tp = 0
+        acc_fp = 0
+        precision = []
+        recall = []
+        for detect in re:
+            if(detect["type"] == "TP"):
+                acc_tp += 1
+            else:
+                acc_fp += 1
+            precision.append(self._precision(acc_tp, acc_fp))
+            recall.append(self._recall(acc_tp, fn))
+            # print(acc_tp, acc_fp, fn)
+            # print(self._precision(acc_tp, acc_fp), self._recall(acc_tp, fn))
+            sleep(4)
+
+        self._pr_curve(precision, recall)
+        return {"precision":precision, "recall":recall}
+    
+    def _pr_curve(self, precision, recall):        
+        fig = plt.figure(figsize = (9,6))
+        plt.plot(recall, precision)
+        plt.scatter(recall, precision)
+        plt.xlabel('Recall')
+        plt.ylabel('Precision')
+        plt.title('Precision-Recall Curve 2D')
+        plt.show()
+        
     def start(self):
         to_tensor = ToTensor()
-        result = [[0, 0, 0, 0] for x in range(4)] # [TP:0, FN:1, FP:2, TN:3]
+        result = [[], [], [], []]
+        # 카테고리 list knife, gun, battery, laserpointer
+        # 그 안에 [confidiences, tp or fp] 저장될 것임
+        fn_result = [0 for x in range(4)] # 카테고리 별로 fn 갯수 저장
+
 
         for _, predict_image_file in enumerate(self.load_predict_image_file_list):             
             # this list is limited predict_image_file
-            pred_list = [] # [[category_id:bbox], ...]
 
             true_list = self._make_true_list(int(predict_image_file.rstrip('.png')))
 
@@ -424,41 +457,22 @@ class Predict:
                 predictions = self.model([image_tensor.to(self.device)])[0]
             
             json_data = self._init_json_data()
+
+            result, fn_result = self._iou_confusion_matrix(predictions, true_list, result, fn_result)
+
             for idx, score in enumerate(predictions["scores"]):
                 if float(score) > self.min_score:
-                    pred_list.append({int(predictions["labels"][idx]): predictions["boxes"][idx].tolist()})
                     for key in predictions.keys():
                         json_data[key].append(self._gpu_to_cpu_numpy(predictions, key, idx))
-
+        
             coco_data = self._predict_to_dataset(
                 file_name=predict_image_file, 
                 image_data=image_data,
                 json_data=json_data
             )
 
-            save_json(coco_data, save_path, save_json_file_name)
-            result2 = self._confusion_matrix(pred_list, true_list)
-            result = np.array(result) + np.array(result2)
-            # print(f"knife precision: {self._convert_precision(result[0])}")
-            # print(f"gun precision: {self._convert_precision(result[1])}")
-            # print(f"battery precision: {self._convert_precision(result[2])}")
-            # print(f"laserpointer precision: {self._convert_precision(result[3])}")
+            save_json(coco_data, save_path, save_json_file_name)                
 
-                    
-            # print(f"knife recall: {self._convert_recall(result[0])}")
-            # print(f"gun recall: {self._convert_recall(result[1])}")
-            # print(f"battery recall: {self._convert_recall(result[2])}")
-            # print(f"laserpointer recall: {self._convert_recall(result[3])}")
-                
             self.view.visualize(save_path, load_file_name, image_data, coco_data)
-        
-        print(f"knife precision: {self._convert_precision(result[0])}")
-        print(f"gun precision: {self._convert_precision(result[1])}")
-        print(f"battery precision: {self._convert_precision(result[2])}")
-        print(f"laserpointer precision: {self._convert_precision(result[3])}")
 
-                
-        print(f"knife recall: {self._convert_recall(result[0])}")
-        print(f"gun recall: {self._convert_recall(result[1])}")
-        print(f"battery recall: {self._convert_recall(result[2])}")
-        print(f"laserpointer recall: {self._convert_recall(result[3])}")
+        self._ap(result, fn_result)
