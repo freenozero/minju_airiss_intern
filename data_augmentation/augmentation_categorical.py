@@ -9,13 +9,13 @@ import natsort
 def main():
     #knife(o)
     #gun(o)
-    #bettery(o)
+    #battery(o)
     #laserpointer(o)
-    img_name = "laserpointer"
+    img_name = "knife"
     folder_path = f"D:/wp/data/background_manipulation/augmentation&cateogrical/before_aug/{img_name}"
     folder_name = os.listdir(folder_path)
     augmentation(img_name, folder_name)
-    filter_image(img_name)
+    # filter_image(img_name)
 
 # json 불러오기
 def json_load(json_path):
@@ -56,7 +56,7 @@ def augmentation(img_name, folder_name):
                                                         'color': '040439',
                                                         'metadata': ''},
                                                         {'id': 2,
-                                                        'name': 'bettery',
+                                                        'name': 'battery',
                                                         'supercategory': 'item',
                                                         'color': '040439',
                                                         'metadata': ''},
@@ -140,8 +140,8 @@ def augmentation(img_name, folder_name):
 
                 new_annotations = {'id': save_file_name+1,
                                     'image_id': save_file_name+1,
-                                    # ※1: knife, 2:gun, 3:bettery, 4:laserpointer 변경 필요※
-                                    'category_id': 4, 
+                                    # ※1: knife, 2:gun, 3:battery, 4:laserpointer 변경 필요※
+                                    'category_id': 1,
                                     # x, y, width, height
                                     'bbox': [0, 0, img.shape[1], img.shape[0]],
                                     'segmentation': [[new_seg]],

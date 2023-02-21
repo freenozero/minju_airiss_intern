@@ -6,7 +6,7 @@ def jsonLoad():
     json_data = []
     json_path = ["D:/wp/data/categorical_image/knife/json/crop_data.json",
                 "D:/wp/data/categorical_image/gun/json/crop_data.json",
-                "D:/wp/data/categorical_image/bettery/json/crop_data.json",
+                "D:/wp/data/categorical_image/battery/json/crop_data.json",
                 "D:/wp/data/categorical_image/laserpointer/json/crop_data.json"]
 
     for path in json_path:
@@ -107,7 +107,7 @@ def jsonAppend(original_json, save_json, file_name, bk_images, random_max,  high
 # item 모든 이미지 불러오기
 def allItemLoad(item):
     #categorical
-    categorical = ["knife", "gun", "bettery", "laserpointer"]
+    categorical = ["knife", "gun", "battery", "laserpointer"]
     item_images = [[],[],[],[]]
     # 모든 이미지 불러오기
     for i, category in enumerate(categorical):
