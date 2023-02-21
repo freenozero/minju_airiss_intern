@@ -1,6 +1,6 @@
 name = f"highlow"
 
-model_path = f"D:/wp/data/manipulation_image(9,1)/{name}"
+model_path = f"D:/wp/data/manipulation_image(8,2)/{name}"
 test_path = "D:/wp/data/test_image/High_energy_image_size(700x700)_16bit"
 
 dirs = {
@@ -15,5 +15,5 @@ files = {
 }
 
 model = {
-    "min_score" : 0.999
+    "min_score" : 0.5
 }

@@ -18,11 +18,11 @@ def config_set(config_full_path):
         for name, value in load_module.__dict__.items()
         if not name.startswith("__")
     }
-    
+
     if "dirs" in configs.keys():
         check_dir_list(configs["dirs"])
     return configs
 
-train_configs = config_set("./mask_rcnn/library/config/train_config.py")
-predict_configs = config_set("./mask_rcnn/library/config/predict_config.py")
-view_configs = config_set("./library/ai/MaskRCNN/config/view_config.py")
+train_configs = config_set("D:/wp/minju_airiss_intern/mask_rcnn/library/config/train_config.py")
+predict_configs = config_set("D:/wp/minju_airiss_intern/mask_rcnn/library/config/predict_config.py")
+view_configs = config_set("D:/wp/minju_airiss_intern/mask_rcnn/library/config/view_config.py")

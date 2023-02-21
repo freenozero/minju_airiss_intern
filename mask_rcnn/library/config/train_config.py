@@ -17,7 +17,7 @@ files = {
 
 dataloader = {
     "train" : {
-        "batch_size": 4,
+        "batch_size": 1,
         "shuffle":True,
         "num_workers":0,
     },
@@ -30,7 +30,7 @@ dataloader = {
 }
 
 model = {
-    "epochs": 50,
+    "epochs": 20,
     "detection":{
         "hidden_layer": 256,
         "pretrained": True
