@@ -212,7 +212,7 @@ class Predict:
     
     def _device(self):
         return torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        
+    
     def _load_categories(self, full):
         path, name = split_path_name(full)
         return load_json(path, name)["categories"]
@@ -356,7 +356,7 @@ class Predict:
 
         # FN: 검출되지 못했을 때(iou_threshold가 이하일 때)
         for true in true_list_copy:
-            print(true)
+            # print(true)
             for key, _ in true.items():
                 fn_result[key - 1] += 1
 
@@ -406,6 +406,15 @@ class Predict:
         acc_fp = 0
         precision = []
         recall = []
+
+        # AP 계산방법..
+        # 11점 보간법: 동일한 간격의 11개의 recall 레벨에서 precision 평균을 계산하여 p-r 곡선을 요약한 방식 :: average precision 계산
+        # 모든점 보간법: 11점 대신 아래의 방식으로 모든 점을 이용하는 방식
+        
+        # 11점 보간법
+        preciison_11_point = [0 for i in range(11)] # recall이 0.0, 0.1, 0.2, ...., 1.0 일때 최댓값 저장
+        R = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
         for detect in re:
             if(detect["type"] == "TP"):
                 acc_tp += 1
@@ -413,20 +422,26 @@ class Predict:
                 acc_fp += 1
             precision.append(self._precision(acc_tp, acc_fp))
             recall.append(self._recall(acc_tp, fn))
-            # print(acc_tp, acc_fp, fn)
-            # print(self._precision(acc_tp, acc_fp), self._recall(acc_tp, fn))
-            sleep(4)
+
+            idx = R.index(round(self._recall(acc_tp, fn), 1))
+
+            # 해당 recall 값의 precision 보다 이번 precision이 더 크면 변경
+            if(preciison_11_point[idx] < self._precision(acc_tp, acc_fp)):
+                preciison_11_point[idx] = self._precision(acc_tp, acc_fp)
 
         self._pr_curve(precision, recall)
-        return {"precision":precision, "recall":recall}
+        return sum(preciison_11_point)/11
     
     def _pr_curve(self, precision, recall):        
         fig = plt.figure(figsize = (9,6))
         plt.plot(recall, precision)
-        plt.scatter(recall, precision)
+        # plt.scatter([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
         plt.xlabel('Recall')
         plt.ylabel('Precision')
-        plt.title('Precision-Recall Curve 2D')
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.0])
+        plt.axis('square')
+        plt.title('PR Curve')
         plt.show()
         
     def start(self):
@@ -475,4 +490,5 @@ class Predict:
 
             self.view.visualize(save_path, load_file_name, image_data, coco_data)
 
-        self._ap(result, fn_result)
+        print(self._ap(result, fn_result))
+        

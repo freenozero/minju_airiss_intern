@@ -1,6 +1,6 @@
 name = f"highlow"
 
-absolute_path = f"D:/wp/data/manipulation_image(8,2)/{name}"
+absolute_path = f"D:/wp/data/manipulation_image(8,1,1)/{name}"
 
 dirs = {
     'train_image_path': f"{absolute_path}/train/jitter_image",
