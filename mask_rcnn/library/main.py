@@ -391,6 +391,7 @@ class Predict:
         return tp/(tp+fn)
     
     def _ap(self, result, fn_result):
+        '''ap 구하기'''
         result[0] = sorted(result[0], key= lambda x: x["confidences"], reverse=True)
         result[1] = sorted(result[1], key= lambda x: x["confidences"], reverse=True)
         result[2] = sorted(result[2], key= lambda x: x["confidences"], reverse=True)
@@ -402,6 +403,7 @@ class Predict:
         return cate_ap
     
     def _cate_ap(self, re, fn):
+        '''category 별로 ap 구하기'''
         acc_tp = 0
         acc_fp = 0
         precision = []
@@ -422,6 +424,9 @@ class Predict:
                 acc_fp += 1
             precision.append(self._precision(acc_tp, acc_fp))
             recall.append(self._recall(acc_tp, fn))
+
+            print(acc_tp, acc_fp, fn)
+            print(self._precision(acc_tp, acc_fp), self._recall(acc_tp, fn))
 
             idx = R.index(round(self._recall(acc_tp, fn), 1))
 
