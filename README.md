@@ -94,7 +94,7 @@ pandas==1.2.4
 pandocfilters==1.5.0
 parso==0.8.3
 pickleshare==0.7.5
-Pillow==8.2.0
+Pillow==9.4.0
 pkgutil_resolve_name==1.3.10
 platformdirs==2.6.2
 prometheus-client==0.16.0
@@ -104,7 +104,7 @@ psutil==5.9.4
 pure-eval==0.2.2
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
-pycocotools==2.0.2
+pycocotools==2.0.4
 pycodestyle==2.7.0
 pycparser==2.21
 Pygments==2.14.0
@@ -140,6 +140,7 @@ terminado==0.17.1
 tinycss2==1.2.1
 toml==0.10.2
 torch==1.13.1+cu117
+torchmetrics==0.11.1
 torchvision==0.14.1+cu117
 tornado==6.2
 traitlets==5.8.1
