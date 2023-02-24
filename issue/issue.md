@@ -15,4 +15,4 @@ crop 데이터 증강 하기(생성된 이미지 정보 crop_data.json에도 추
 
 ## Example
 - ./xray_scissors_5/crop (원본)
-<img src=".#1/1.png">
+<img src="./#1/1.png">
