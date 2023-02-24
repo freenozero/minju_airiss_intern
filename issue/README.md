@@ -1,5 +1,5 @@
 # 목차
-[1. test](#[data_augmentation]-데이터-증강-#1)
+[1. test](#[data_augmentation]-추가-이미지-seg,-bbox-시각적-표현-#2)
 
 ## [data_augmentation] 데이터 증강 #1
 **Closed** freenozero opened this issue on Jan 6 · 0 comments
