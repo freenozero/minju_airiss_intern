@@ -1,5 +1,21 @@
 # 목차
-[1. test](#[data_augmentation]-추가-이미지-seg,-bbox-시각적-표현-#2)
+1. 데이터 증강(rotate)
+2. groundtruths
+3. feedback
+4. category 단일화
+5. manipulation
+6. high, low image size 맞추기
+7. 이미지 증강 코드 개선 및 모듈화, 폴더 정리
+8. manipulation json 파일 생성
+9. manipulation 이미지 groundtruths
+10. pytorch study
+11. pytorch penfudanped
+12. tran, val, test set 나누기
+13. manipulation 이미지 전처리 학습
+14. cuda cudnn 설치
+15. manipulation 이미지 학습
+16. manipulation 이미지 검증
+17. manipulation 이미지 검증 후 precision, recall 구하기
 
 ## [data_augmentation] 데이터 증강 #1
 **Closed** freenozero opened this issue on Jan 6 · 0 comments
