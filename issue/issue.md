@@ -385,11 +385,11 @@ data
 **Closed** freenozero opened this issue last month · 0 comments
 ## Description
 (#13 을 하기 위해서 manipulation 데이터들 변경) <br>
-1.json 파일을 수정 <br>
+1. json 파일을 수정 <br>
 변경 사항 및 중요한 부분은 ETC에 굵음 표시 <br>
-2.합성할 때 카테고리 당 최소 3개에서 5개로 변경 <br>
+2. 합성할 때 카테고리 당 최소 3개에서 5개로 변경 <br>
 즉, 이미지 하나에 들어가는 카테고리는 총 12~20개 <br>
-3.color jettering
+3. color jettering
 low, high 상관 없이 color jitter를 랜덤으로 <br>
 https://pytorch.org/vision/main/generated/torchvision.transforms.ColorJitter.html
 
@@ -433,19 +433,21 @@ data.json 구조
 **Closed** freenozero opened this issue last month · 0 comments
 ## Description
 GPU: NVIDIA GeForce RTX 3090
-•	Compute Capability: 8.6
-•	CUDA SDK 11.1 – 11.4
-- <CUDA SDK 11.1 – 11.4 support for compute capability 3.5 – 8.6 (Kepler (in part), Maxwell, Pascal, Volta, Turing, Ampere (in part))>
+- Compute Capability: 8.6
+- CUDA SDK 11.1 – 11.4 *<CUDA SDK 11.1 – 11.4 support for compute capability 3.5 – 8.6 (Kepler (in part), Maxwell, Pascal, Volta, Turing, Ampere (in part))>*
 
 ### 설치 코드
 ERROR: Could not find a version that satisfies the requirement torch==1.13.1+cu117 (from versions: 1.7.1, 1.8.0, 1.8.1, 1.9.0, 1.9.1, 1.10.0, 1.10.1, 1.10.2, 1.11.0, 1.12.0, 1.12.1, 1.13.0, 1.13.1) ERROR: No matching distribution found for torch==1.13.1+cu117 
-•	python -m pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 -f https://download.pytorch.org/whl/torch_stable.html
+<br>
+- python -m pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 -f https://download.pytorch.org/whl/torch_stable.html
 
 ## ETC
 cpu로 했을 때보다 진짜 빠르다... <br>
 1.	https://leonam.tistory.com/98
-2.	https://mizzlena.tistory.com/entry/%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5-Pytorch-Install <br>
+2.	https://mizzlena.tistory.com/entry/%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5-Pytorch-Install
+<br>
 --------------------------이사-------------------------
+<br>
 •	Compute Capability: 6.1
 •	CUDA SDK 11.1 – 11.4 새로 설치
 
@@ -507,3 +509,165 @@ data
 ```
 ## Result
 ### Example
+<img src="./img/17/1.png">
+<img src="./img/17/2.png">
+
+# [mask_rcnn] object-detection(manipulation image) 2 #18
+**Closed** 5 tasks done freenozero opened this issue 2 weeks ago · 0 comments
+
+## Description
+- 주어진 실 촬영 데이터인 test 이미지로 검증하기
+1. background image들을 700x700으로 변경해서 합성 이미지 만들기)
+2. manipulation image들은 9:1과 8:2 비율로 train, val 폴더 분리하기
+3. test 이미지 groundtruth하기(knife:보라, gun:빨강, battery: 민트, laserpointer: 연초록으로 나타남)  <br>
+4. 학습 후 test 이미지로 검증하기 <br>
+5. IOU=0.5 이상일 때 각 카테고리 별로 Average precision, Average recall 구하기 <br>
+https://velog.io/@joon10266/Objection-Detection-mAP%EB%9E%80 <br>
+https://lapina.tistory.com/98 <br>
+https://herbwood.tistory.com/2 <br>
+
+- main의 340번째 줄에서 구한 json_data 예시이다. predictions에서 score가 0.5인 것들이 저장되어 있는데 이것을 이용해서 처음부터 구현해보기..!
+1.	iou 구하기
+2.	confusion matrix 구하기
+3.	recall, precision 구하기
+
+```
+{'boxes': [array([248.92194, 215.11569, 341.88998, 462.15182], dtype=float32), 
+array([313.30914, 164.37004, 420.69952, 334.37543], dtype=float32),
+array([197.76933, 405.19885, 309.72058, 501.4165 ], dtype=float32),
+array([354.68762, 348.2364 , 400.53427, 429.05948], dtype=float32),
+array([396.65244, 294.18842, 452.76904, 349.66107], dtype=float32),
+array([396.8408 , 238.89511, 433.8597 , 341.11755], dtype=float32),
+array([416.8089 , 293.75836, 452.209 , 327.09152], dtype=float32),
+array([395.8528, 237.3463, 433.5417, 308.0898], dtype=float32),
+array([415.41946, 245.76591, 443.16995, 335.99905], dtype=float32),
+array([219.66817, 124.49312, 313.2634 , 295.11   ], dtype=float32)],
+'masks': [array([[[0, 0, 0, ..., 0, 0, 0],
+        [0, 0, 0, ..., 0, 0, 0],
+        [0, 0, 0, ..., 0, 0, 0],
+        ...,
+        [0, 0, 0, ..., 0, 0, 0],
+        [0, 0, 0, ..., 0, 0, 0],
+        [0, 0, 0, ..., 0, 0, 0]]], dtype=uint8), array([[[0, 0, 0, ..., 0, 0, 0],
+        [0, 0, 0, ..., 0, 0, 0],
+        [0, 0, 0, ..., 0, 0, 0],
+        ..., dtype=uint8)],
+'scores': [array(0.9999877, dtype=float32), array(0.9999443, dtype=float32),
+array(0.99882287, dtype=float32), array(0.9409943, dtype=float32),
+array(0.8265976, dtype=float32), array(0.7886496, dtype=float32),
+array(0.60963416, dtype=float32), array(0.599601, dtype=float32),
+array(0.54668903, dtype=float32), array(0.5215575, dtype=float32)],
+'labels': [array(2, dtype=int64), array(1, dtype=int64),
+array(1, dtype=int64), array(4, dtype=int64),
+array(1, dtype=int64), array(1, dtype=int64),
+array(1, dtype=int64), array(4, dtype=int64),
+array(1, dtype=int64), array(1, dtype=int64)]}
+```
+
+## ETC
+train, val의 data.json 구조
+1. image
+- id: 0부터 계속 늘어남 중복 없어야함
+- dataset_id: 계속 1
+- path: 이미지 위치
+- file_name: 이미지 이름
+- width, height
+
+2. categories
+- id: 0부터 계속 늘어남 중복 없어야함
+- name: name <br>
+{1: knife, 2: gun, 3: bettery, 4: laserpointer} (1부터 시작)
+
+3. annotations
+- id: annotation 아이디 0부터! 중복 없어야함
+- image_id: image 아이디
+- category_id: categories의 정보(1이면 knife)
+- segmentation: 해당 사진 데이터 점들 x,y 정보가 차례로 저장
+- area: w*h
+- bbox: x0, y0, w, h
+
+## Result
+### min_score: 0.9
+
+- groundtruth한 test 이미지
+<img src="./img/18/1.png">
+- 예측한 이미지
+<img src="./img/18/2.png">
+
+```
+knife precision: 0.09861386138613862
+gun precision: 0.4307116104868914
+battery precision: 0.21674876847290642     
+laserpointer precision: 0.12139107611548557
+knife recall: 0.672972972972973
+gun recall: 0.6307129798903108
+battery recall: 0.7135135135135136
+laserpointer recall: 0.625
+```
+
+### min_score: 0.5
+<img src="./img/18/3.png">
+
+```
+knife precision: 0.06981637337413925
+gun precision: 0.42812006319115326
+battery precision: 0.16589861751152074
+laserpointer precision: 0.1027516544757924
+knife recall: 1.0
+gun recall: 0.9963235294117647
+battery recall: 1.0
+laserpointer recall: 0.9966216216216216
+```
+
+※ 문제점: 오 탐지되는 것이 너무 많다...
+
+## 주어진 test 이미지가 아니고 만든 manipulation image를 8:1:1 비율로 했을때
+<img src="./img/18/4.png">
+
+```
+knife precision: 0.8706331226898771
+gun precision: 0.9515090289177927
+battery precision: 0.9555693069306931     
+laserpointer precision: 0.9020155415250122
+knife recall: 0.9414646725116039
+gun recall: 0.9613421791273284
+battery recall: 0.9752431476569408        
+laserpointer recall: 0.9365859808371155   
+```
+
+주어진 test 이미지가 다르게 생겨서 그런 것 같고 precision recall을 구하는 방식이 잘 못 되어 있는 것 같다.
+
+# [mask_rcnn] object-detection(manipulation image) 3 #20
+**Closed** freenozero opened this issue 2 weeks ago · 0 comments
+
+## Description
+precision, recall 구하는 함수 다시 작성 -> IOU=0.5 이상일 때 각 카테고리 별로 Average precision, Average recall 구하기 <br>
+https://velog.io/@joon10266/Objection-Detection-mAP%EB%9E%80<br>
+https://lapina.tistory.com/98<br>
+https://herbwood.tistory.com/2
+
+## Result
+## jitter_image 8:1:1
+- knife_pr_curve
+<img src="./img/20/1.png">
+- gun_pr_curve
+<img src="./img/20/2.png">
+- batter_pr_curve
+<img src="./img/20/3.png">
+- laserpointer_pr_curve
+<img src="./img/20/4.png">
+- AP
+<img src="./img/20/5.PNG">
+
+## jitter_image 9:1
+(만든 것과 다른 test 이미지 결과)
+- knife_pr_curve
+<img src="./img/20/6.png">
+- gun_pr_curve
+<img src="./img/20/7.png">
+- batter_pr_curve
+<img src="./img/20/8.png">
+- laserpointer_pr_curve
+<img src="./img/20/9.png">
+- AP
+<img src="./img/20/10.PNG">
