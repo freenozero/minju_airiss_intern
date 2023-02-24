@@ -11,11 +11,11 @@
 10. [[study]pytorch study](#study-pytorch-11)
 11. [[study]pytorch penfudanped](#study-penfudanped-12)
 12. [[background_image]tran, val, test set 나누기](#background_image-train-val-test-set-13)
-13. [[background_image]manipulation 이미지 전처리 학습](#background_image-manipulation한-데이터들-학습을-위해-변경-14)
+13. [[background_image]manipulation 이미지 전처리](#background_image-manipulation한-데이터들-학습을-위해-변경-14)
 14. [[mask_rcnn]cuda cudnn 설치](#mask_rcnn-cuda--cudnn-설치-15)
 15. [[mask_rcnn]manipulation 이미지 학습](#mask_rcnn-object-detectionmanipulation-image-17)
 16. [[mask_rcnn]manipulation 이미지 검증](#mask_rcnn-object-detectionmanipulation-image-2-18)
-17. [[mask_rcnn]manipulation 이미지 검증 후 precision, recall 구하기](#mask_rcnn-object-detectionmanipulation-image-3-20)
+17. [[mask_rcnn]manipulation AP 구하기](#mask_rcnn-object-detectionmanipulation-image-3-20)
 
 ## [data_augmentation] 데이터 증강 #1
 **Closed** freenozero opened this issue on Jan 6 · 0 comments
@@ -660,7 +660,7 @@ laserpointer recall: 0.9365859808371155
 **Closed** freenozero opened this issue 2 weeks ago · 0 comments
 
 ### Description
-precision, recall 구하는 함수 다시 작성 -> IOU=0.5 이상일 때 각 카테고리 별로 Average precision, Average recall 구하기 <br>
+precision, recall 구하는 함수 다시 작성 -> IOU=0.5 이상일 때 각 카테고리 별로 Average precision구하기 <br>
 https://velog.io/@joon10266/Objection-Detection-mAP%EB%9E%80<br>
 https://lapina.tistory.com/98<br>
 https://herbwood.tistory.com/2
