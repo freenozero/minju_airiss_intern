@@ -660,7 +660,7 @@ laserpointer recall: 0.9365859808371155
 **Closed** freenozero opened this issue 2 weeks ago · 0 comments
 
 ### Description
-precision, recall 구하는 함수 다시 작성 -> IOU=0.5 이상일 때 각 카테고리 별로 Average precision, Average recall 구하기 <br>
+precision, recall 구하는 함수 다시 작성 -> IOU=0.5 이상일 때 각 카테고리 별로 Average precision구하기 <br>
 https://velog.io/@joon10266/Objection-Detection-mAP%EB%9E%80<br>
 https://lapina.tistory.com/98<br>
 https://herbwood.tistory.com/2
