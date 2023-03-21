@@ -200,7 +200,15 @@ zipp==3.4.1
 
 3. mask_rcnn: mask_rcnn으로 만든 이미지 학습하기
 ```
+ㄴ library
+  ㄴ config : 학습, 검증 이미지, groundtruths 이미지 설정
+  ㄴ dataset : cocodataset
+  ㄴ utils: 앞에 처럼 header, io, log, veiw 폴더 존재(특정 모적에 사용되도록 만듦)
+  ㄴ vision/references: vision : torchvision 코드 (https://github.com/freenozero/vision)
+  ㄴ main.py : dataset 로드, predict, train 함수 작성
+ㄴ run.py : 메인 run 파일
 
+(사수님께 받은 코드에서 몇몇 버그 수정하고 predict 코드, ap 구하기(11점 보간법) 작성)
 ```
 
 
