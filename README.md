@@ -183,7 +183,7 @@ zipp==3.4.1
 2. manipulation: 하라고 요청이 들어온 순서가 뒤죽박죽이라.. 진행되는 방향이 난해한 편...
 ```
 ㄴ libarary
-  ㄴ utils
+    ㄴ utils
         ㄴ algorithm.py : 각종 필요한 알고리즘
         ㄴ header.py
         ㄴ io.py : 모든 파일 입출력 관련
