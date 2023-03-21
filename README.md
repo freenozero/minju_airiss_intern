@@ -159,3 +159,65 @@ zipp==3.4.1
 ```
 
 ## Explain
+### Project Folder
+1. data_augmentation
+```
+ㄴ (원본) data_augmentation.py: 맨 처음 만든 augementation 하는 파일(이후에 리팩토링)
+
+(원본) data_augmentation.py를 리팩토링한 모듈들
+ㄴ run.py : 메인 run 파일
+ㄴ augmentation
+  ㄴ augmentation.py : 모든 폴더에 있는 files를 augmentation하는 파일
+ㄴ library
+  ㄴ utils
+     ㄴ filesfolder.py : file 로딩 저장 관련
+     ㄴ header.py
+     ㄴ image.py : image 로딩 저장 관련
+     ㄴ json.py : json 로딩 저장 관련
+     ㄴ reshape.py : 이미지 reshpae 하는 파일
+ 
+ㄴ augmentation_cateogrical.py: 칼, 총, 배터리, 레이저포인터가 여러 폴더로 나눠져있는데 해당 폴더 카테고리 정리 후 augmentation 하는 파일(리팩토링 하지 못함..)
+
+```
+
+2. manipulation: 하라고 요청이 들어온 순서가 뒤죽박죽이라.. 진행되는 방향이 난해한 편...
+```
+ㄴ libarary
+  ㄴ utils
+        ㄴ algorithm.py : 각종 필요한 알고리즘
+        ㄴ header.py
+        ㄴ io.py : 모든 파일 입출력 관련
+     ㄴ background_manipulation.py : 이미지 합성
+     ㄴ groundtruths.py : 합성한 이미지 카테고리 별로 json 잘 저장되어있는지 확인
+     ㄴ jitter.py : jitter 시키기
+     ㄴ split.py : run에서 설정한 세팅대로 train, val, test로 데이터 나누기
+ㄴ run.py : 메인 run 파일
+
+ㄴ resize.py : 이미지 700x700으로 맞추기
+ㄴ test_image_del.py : test 이미지에서 사용하지 않는 카테고리 json에서 삭제
+
+```
+
+3. mask_rcnn: mask_rcnn으로 만든 이미지 학습하기
+```
+
+```
+
+
+### Remain Folder
+1. tutorial_pytorch
+```
+- pytorch를 처음 하다보니 튜토리얼 사이트를 보면서 하나하나 클론코딩하면서 공부
+```
+2. Pytorch_Fintuning_Example
+```
+- 사수님께 받은 fintuning 예제 코드 클론 코딩하면서 공부
+```
+3. issue
+```
+- 원래 회사 레퍼지스토리에서 계속 관리한 issue가 있었는데, 끝나고 해당 레퍼지스토리 삭제하니 폴더로 따로 업로드
+```
+4. 발표
+```
+- 인턴십을 하면서 진행한 모든 것 발표 자료 정리
+```
