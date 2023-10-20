@@ -180,7 +180,7 @@ zipp==3.4.1
 
 ```
 
-2. manipulation: order 들어온 순서가 뒤죽박죽이라.. 진행되는 방향이 난해한 편...
+2. manipulation: order 들어온 순서가 뒤죽박죽이라.. 진행되는 순서가 난해한 편...
 ```
 ㄴ libarary
     ㄴ utils
